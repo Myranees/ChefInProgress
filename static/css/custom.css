@@ -1,0 +1,38 @@
+/* static/css/custom.css */
+
+.fixed-action-btn {
+    position: fixed;
+    bottom: 60px;
+    right: 30px;
+    z-index: 999;
+}
+
+.fab-expand {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    transition: width 0.3s ease;
+    width: 60px;
+    white-space: nowrap;
+    border-radius: 30px;
+}
+
+.fab-expand:hover {
+    width: 180px;
+}
+
+.fab-expand i {
+    margin: 0 12px;
+    transition: margin 0.3s ease;
+}
+
+.fab-text {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-weight: 500;
+}
+
+.fab-expand:hover .fab-text {
+    opacity: 1;
+    margin-right: 16px;
+}

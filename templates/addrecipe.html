@@ -1,0 +1,92 @@
+{% extends "layout.html"%}
+{% block content %}
+
+<!--Section: addrecipe -->
+<section>
+    <div class="container my-5">
+        <h3 class="text-center mb-4">Create Your Own Recipe</h3>
+        <form method="POST">
+
+            <!--Add Recipe Title-->
+            <div class="mb-4">
+                <label for="recipeTitle" class="form-label">Recipe Title</label>
+                <input type="text" class="form-control" id="recipeTitle" name="title" required>
+            </div>
+
+            <!--Add Recipe Image-->
+            <div class="mb-4">
+                <label for="recipeImage" class="form-label">Add Image (Optional)</label>
+                <input type="file" class="form-control" id="recipeImage" name="image">
+            </div>
+
+            <!--Add Recipe Description-->
+            <div class="mb-4">
+                <label for="recipeDescription" class="form-label">Description</label>
+                <textarea class="form-control" id="recipeDescription" name="description" rows="3" required></textarea>
+            </div>
+
+            <!--Add Recipe Cuisine Categories-->
+            <div class="mb-4">
+                <label for="cuisine" class="form-label">Cuisine</label>
+                <select class="form-select" id="cuisine" name="cuisine" required>
+                    <option value="" disabled selected>Select Cuisine</option>
+                    <option value="malay">Malay</option>
+                    <option value="chinese">Chinese</option>
+                    <option value="indian">Indian</option>
+                    <option value="thai">Thai</option>
+                    <option value="western">Western</option>
+                    <option value="japanese">Japanese</option>
+                </select>
+            </div>
+
+            <!--Add Recipe Prep Time-->
+            <div class="mb-4">
+                <label for="prepTime" class="form-label">Prep Time (e.g., 20 mins)</label>
+                <input type="text" class="form-control" id="prepTime" required>
+            </div>
+
+            <!--Add Recipe Serving Size-->
+            <div class="mb-4">
+                <label for="servings" class="form-label">Servings Suggestion</label>
+                <input type="number" class="form-control" id="servings" required>
+            </div>
+
+            <!-- Ingredients -->
+            <div class="mb-4">
+                <label class="form-label">Ingredients</label>
+                <div id="ingredient-list">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" name="ingredients[]" placeholder="e.g., 1 cup flour">
+                        <button type="button" class="btn btn-outline-danger remove-btn" onclick="removeIngredient(this)"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addIngredient()">+ Add Ingredient</button>
+            </div>
+
+            <!-- Steps -->
+            <div class="mb-4">
+                <label class="form-label">Instructions</label>
+                <div id="step-list">
+                    <!-- Step Item -->
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" name="steps[]" placeholder="Describe this step...">
+                        <button type="button" class="btn btn-outline-danger remove-btn" onclick="removeStep(this)"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <!-- Image for step -->
+                    <div class="input-group mb-2">
+                        <input type="file" class="form-control" name="steps[]" placeholder="Describe this step...">
+                        <button type="button" class="btn btn-outline-danger remove-btn" onclick="removeStepImage(this)"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="addStep()">+ Add Step</button>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center">
+                <button type="submit" class="btn btn-primary">Submit Recipe</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block content %}
+<!--Section: register -->
+<section class="vh-100 d-flex align-items-center justify-content-center bg-light">
+    <div class="card shadow-5 p-4" style="width: 400px;">
+      <h3 class="text-center mb-4">Create an Account</h3>
+      <form action="/register" method="POST">
+        <!-- Username -->
+        <div class="form-outline mb-4">
+          <input type="text" name="username" id="registerUsername" class="form-control" required />
+          <label class="form-label" for="registerUsername">Username</label>
+        </div>
+  
+        <!-- Email -->
+        <div class="form-outline mb-4">
+          <input type="email" name="email" id="registerEmail" class="form-control" required />
+          <label class="form-label" for="registerEmail">Email</label>
+        </div>
+  
+        <!-- Password -->
+        <div class="form-outline mb-4">
+          <input type="password" name="password" id="registerPassword" class="form-control" required />
+          <label class="form-label" for="registerPassword">Password</label>
+        </div>
+  
+        <!-- Confirm Password -->
+        <div class="form-outline mb-4">
+          <input type="password" name="confirm_password" id="registerConfirmPassword" class="form-control" required />
+          <label class="form-label" for="registerConfirmPassword">Confirm Password</label>
+        </div>
+  
+        <!-- Submit -->
+        <button type="submit" class="btn btn-success w-100 mb-3">Register</button>
+  
+        <!-- Login link -->
+        <div class="text-center">
+          <p>Already have an account? <a href="/login">Login here</a></p>
+        </div>
+      </form>
+    </div>
+  </section>
+{% endblock %}  

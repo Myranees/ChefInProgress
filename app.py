@@ -9,7 +9,6 @@ from os.path import join, dirname, realpath
 from werkzeug.utils import secure_filename # for secure name
 from datetime import datetime #datetime
 
-
 client = MongoClient("mongodb://localhost:27017/") # connect on the "localhost" host and port 27017
 db = client["chef"] # use/create "webapp" database
 recipe_col = db.recipe # use/create "recipe" collection
@@ -27,7 +26,6 @@ app.config['UPLOAD_FOLDER'] = FULL_UPLOAD_FOLDER
 
 # for session
 app.secret_key = 'fad62b7c1a6a9e67dbb66c3571a23ff2425650965f80047ea2fadce543b088cf'
-
 
 @app.route('/')
 def index():
@@ -62,7 +60,6 @@ def addrecipe():
 @app.route('/test')
 def test():
     return render_template('test.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True) 

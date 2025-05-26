@@ -61,6 +61,9 @@
                             <a class="nav-link" href="{{ url_for('index') }}">Home</a>
                         </li>
                         <li class="nav-item pe-2">
+                            <a class="nav-link" href="{{ url_for('savedrecipes') }}">Saved Recipes</a>
+                        </li>
+                        <li class="nav-item pe-2">
                             <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
                         </li>
                     </ul>
@@ -68,9 +71,6 @@
                     <!-- right menu -->
                     <ul class="navbar-nav d-flex flex-row">
                         {% if 'user_email' in session %}
-                            <li class="nav-item me-3 me-lg-0">
-                                <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
-                            </li>
                             <li class="nav-item me-3 me-lg-0">
                                 <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                             </li>

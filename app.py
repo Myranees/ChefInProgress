@@ -103,8 +103,8 @@ def register():
     # if GET request, show registration form
     return render_template('register.html')
 
-@app.route('/myrecipes')
-def myrecipes():
+@app.route('/savedrecipes')
+def savedrecipes():
     if 'user_email' not in session:
         flash("Please login to view your saved recipes.")
         return redirect(url_for('login'))
@@ -115,7 +115,11 @@ def myrecipes():
     # Fetch recipes that match any of the saved titles
     recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
 
-    return render_template('myrecipes.html', recipes=recipes)
+    return render_template('savedrecipes.html', recipes=recipes)
+
+@app.route('/myrecipes')
+def myrecipes():
+    return render_template('myrecipes.html')
 
 @app.route('/recipe/title/<recipe_title>')
 def recipedetails(recipe_title):
@@ -144,7 +148,7 @@ def add_to_favorites(recipe_title):
             flash(f"{recipe_title} added to your favorites!")
         else:
             flash(f"{recipe_title} is already in your favorites.")
-    return redirect(url_for('myrecipes'))
+    return redirect(url_for('savedrecipes'))
 
 @app.route('/addrecipe')
 def addrecipe():

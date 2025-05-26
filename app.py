@@ -150,6 +150,10 @@ def add_to_favorites(recipe_title):
 def addrecipe():
     return render_template('addrecipe.html')
 
+@app.route('/editrecipe')
+def editrecipe():
+    return render_template('editrecipe.html')
+
 @app.route('/logout')
 def logout():
     session.clear()  # remove all session data

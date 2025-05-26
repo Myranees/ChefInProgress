@@ -29,7 +29,8 @@ app.secret_key = 'fad62b7c1a6a9e67dbb66c3571a23ff2425650965f80047ea2fadce543b088
 
 @app.route('/')
 def index():
-    return render_template('home.html')
+    recipes = list(recipe_col.find()) 
+    return render_template('home.html', recipes=recipes)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -91,7 +92,8 @@ def register():
         user_col.insert_one({
             "username": username,
             "email": email,
-            "password": hashed_password
+            "password": hashed_password,
+            "favorite": []
         })
 
         flash("Registration successful! Please log in.")
@@ -102,7 +104,16 @@ def register():
 
 @app.route('/myrecipes')
 def myrecipes():
-    recipes = list(recipe_col.find())  # Fetch all recipes as a list of dicts from MongoDB
+    if 'user_email' not in session:
+        flash("Please login to view your saved recipes.")
+        return redirect(url_for('login'))
+
+    user = user_col.find_one({'email': session['user_email']})
+    favorite_titles = user.get('favorites', [])
+
+    # Fetch recipes that match any of the saved titles
+    recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
+
     return render_template('myrecipes.html', recipes=recipes)
 
 @app.route('/recipe/title/<recipe_title>')
@@ -113,6 +124,26 @@ def recipedetails(recipe_title):
         recipe['instructions'] = recipe['instructions'].split(';') if isinstance(recipe['instructions'], str) else recipe['instructions']
         return render_template('recipedetails.html', data=recipe)
     abort(404)
+
+@app.route('/add_to_favorites/<recipe_title>')
+def add_to_favorites(recipe_title):
+    if 'user_email' not in session:
+        flash("Please login to save favorites.")
+        return redirect(url_for('login'))
+
+    user = user_col.find_one({'email': session['user_email']})
+    recipe = recipe_col.find_one({'title': recipe_title})
+
+    if user and recipe:
+        if recipe_title not in user.get('favorites', []):
+            user_col.update_one(
+                {'email': session['user_email']},
+                {'$push': {'favorites': recipe_title}}
+            )
+            flash(f"{recipe_title} added to your favorites!")
+        else:
+            flash(f"{recipe_title} is already in your favorites.")
+    return redirect(url_for('myrecipes'))
 
 @app.route('/addrecipe')
 def addrecipe():

@@ -61,15 +61,27 @@
                             <a class="nav-link" href="#">Home</a>
                         </li>
                         <li class="nav-item pe-2">
-                            <a class="nav-link" href="#">MyRecipes</a>
+                            <a class="nav-link" href="#">My Recipes</a>
                         </li>
                     </ul>
 
                     <!-- right menu -->
                     <ul class="navbar-nav d-flex flex-row">
-                        <li class="nav-item me-3 me-lg-0">
-                            <a class="nav-link" href="#">Login</a>
-                        </li>
+                        {% if 'user_email' in session %}
+                            <li class="nav-item me-3 me-lg-0">
+                                <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
+                            </li>
+                            <li class="nav-item me-3 me-lg-0">
+                                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item me-3 me-lg-0">
+                                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                            </li>
+                            <li class="nav-item me-3 me-lg-0">
+                                <a class="nav-link" href="{{ url_for('register') }}">Register</a>
+                            </li>
+                        {% endif %}
                     </ul>
                 </div>
 

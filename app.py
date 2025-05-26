@@ -10,9 +10,9 @@ from werkzeug.utils import secure_filename # for secure name
 from datetime import datetime #datetime
 
 client = MongoClient("mongodb://localhost:27017/") # connect on the "localhost" host and port 27017
-db = client["webapp"] # use/create "webapp" database
+db = client["webtest"] # use/create "webapp" database
 recipe_col = db.recipe # use/create "recipe" collection
-user_col = db['user'] # use/create "user" collection
+user_col = db['webusers'] # use/create "user" collection
 
 # create Flask application
 app = Flask(__name__)

@@ -1,17 +1,31 @@
 # import libraries
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import bcrypt
+from flask import Flask, render_template, url_for, redirect, request, session, flash, abort
 from pymongo import MongoClient
+from bson.objectid import ObjectId #import this to convert ObjectID from string to it's datatype in MongoDB
+import functools
+import bcrypt # to encrypt password
 import os
+from os.path import join, dirname, realpath
+from werkzeug.utils import secure_filename # for secure name
+from datetime import datetime #datetime
+
+client = MongoClient("mongodb://localhost:27017/") # connect on the "localhost" host and port 27017
+db = client['webtest'] # use/create "webapp" database
+recipe_col = db.recipe # use/create "recipe" collection
+user_col = db['webusers'] # use/create "user" collection
 
 # create Flask application
 app = Flask(__name__)
-app.secret_key = 'meowmeowmeow'  # read from environment variable
 
-#MONGODB CONNECTION
-client = MongoClient('mongodb://localhost:27017/')
-db = client['webtest']
-user_col = db['webusers'] 
+# settings for uploading files feature
+PATH_UPLOAD = 'static/uploads'
+FULL_UPLOAD_FOLDER = join(dirname(realpath(__file__)), PATH_UPLOAD) #path for uploaded files
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+# set the config for upload folder
+app.config['UPLOAD_FOLDER'] = FULL_UPLOAD_FOLDER
+
+# for session
+app.secret_key = 'fad62b7c1a6a9e67dbb66c3571a23ff2425650965f80047ea2fadce543b088cf'
 
 @app.route('/')
 def index():
@@ -32,6 +46,7 @@ def login():
             if bcrypt.checkpw(password.encode('utf-8'), user_data['password']):
                 # correct login: create session
                 session['user_email'] = email
+                session['username'] = user_data['username']
                 flash("Logged in successfully!")
                 return redirect(url_for('index')) 
             else:
@@ -88,20 +103,42 @@ def register():
 
 @app.route('/myrecipes')
 def myrecipes():
-    return render_template('myrecipes.html')
+    username = session.get('username')
+    if not username:
+        flash("Please log in to view your recipes.")
+        return redirect(url_for('login'))
 
-@app.route('/recipedetails')
-def recipe():
-    return render_template('recipedetails.html')
+    my_recipes = list(recipe_col.find({'prepared_by': username}))
+
+    saved_recipe_ids = session.get('saved_recipe_ids', [])
+    saved_recipes = list(recipe_col.find({'_id': {'$in': [ObjectId(id) for id in saved_recipe_ids]}}))
+
+    return render_template('myrecipes.html', 
+                           saved_recipes=saved_recipes, 
+                           my_recipes=my_recipes)
+
+@app.route('/recipe/title/<recipe_title>')
+def recipedetails(recipe_title):
+    recipe = recipe_col.find_one({'title': recipe_title})
+    if recipe:
+        recipe['ingredients'] = recipe['ingredients'].split(';') if isinstance(recipe['ingredients'], str) else recipe['ingredients']
+        recipe['instructions'] = recipe['instructions'].split(';') if isinstance(recipe['instructions'], str) else recipe['instructions']
+        return render_template('recipedetails.html', data=recipe)
+    abort(404)
 
 @app.route('/addrecipe')
 def addrecipe():
     return render_template('addrecipe.html')
 
+@app.route('/logout')
+def logout():
+    session.clear()  # remove all session data
+    flash("You’ve been logged out successfully.")
+    return redirect(url_for('login'))
+
 @app.route('/test')
 def test():
     return render_template('test.html')
-
 
 if __name__ == '__main__':
     app.run(debug=True) 

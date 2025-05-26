@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename # for secure name
 from datetime import datetime #datetime
 
 client = MongoClient("mongodb://localhost:27017/") # connect on the "localhost" host and port 27017
-db = client["webapp"] # use/create "webapp" database
+db = client["chef"] # use/create "webapp" database
 recipe_col = db.recipe # use/create "recipe" collection
 user_col = db['user'] # use/create "user" collection
 
@@ -105,19 +105,17 @@ def register():
 
 @app.route('/myrecipes')
 def myrecipes():
-    username = session.get('username')
-    if not username:
-        flash("Please log in to view your recipes.")
+    if 'user_email' not in session:
+        flash("Please login to view your saved recipes.")
         return redirect(url_for('login'))
 
-    my_recipes = list(recipe_col.find({'prepared_by': username}))
+    user = user_col.find_one({'email': session['user_email']})
+    favorite_titles = user.get('favorites', [])
 
-    saved_recipe_ids = session.get('saved_recipe_ids', [])
-    saved_recipes = list(recipe_col.find({'_id': {'$in': [ObjectId(id) for id in saved_recipe_ids]}}))
+    # Fetch recipes that match any of the saved titles
+    recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
 
-    return render_template('myrecipes.html', 
-                           saved_recipes=saved_recipes, 
-                           my_recipes=my_recipes)
+    return render_template('myrecipes.html', recipes=recipes)
 
 @app.route('/recipe/title/<recipe_title>')
 def recipedetails(recipe_title):

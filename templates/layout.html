@@ -40,7 +40,7 @@
             <div class="container">
             <a class="navbar-brand nav-link" href="#">
                 <img
-                src="static\img\icon_chef.png"
+                src="{{ url_for('static', filename='img/icon_chef.png') }}"
                 height="20"
                 alt="MDB Logo"
                 loading="lazy"
@@ -58,10 +58,10 @@
                     <!-- left menu -->
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item pe-2">
-                            <a class="nav-link" href="#">Home</a>
+                            <a class="nav-link" href="{{ url_for('index') }}">Home</a>
                         </li>
                         <li class="nav-item pe-2">
-                            <a class="nav-link" href="#">My Recipes</a>
+                            <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
                         </li>
                     </ul>
 

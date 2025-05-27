@@ -14,6 +14,12 @@ db = client["chef"] # use/create "webapp" database
 recipe_col = db.recipe # use/create "recipe" collection
 user_col = db['user'] # use/create "user" collection
 
+# IMPORT AI_APIs.PY HERE
+import AI_APIs # import the AI_APIs.py file
+
+# new collections for AI APIs
+googleai_text_col = db['googleai_text'] # use/create "googleai_text" collection
+
 # create Flask application
 app = Flask(__name__)
 
@@ -157,6 +163,54 @@ def addrecipe():
 @app.route('/editrecipe')
 def editrecipe():
     return render_template('editrecipe.html')
+
+# 1. Google AI: Text generation route
+@app.route('/google_text_generation', methods=['GET', 'POST'])
+def google_text_generation():
+    # handling a form is submitted via POST aka login data
+    if request.method == "POST":
+        # receive text data from POST form
+        prompt_text = request.form['prompt_text'].strip()
+
+        # get response text
+        content = ""
+        try:
+            # call the AI_APIs.py function to generate text using Google Gemini AI
+            content = AI_APIs.generate_text_gemini(prompt_text)
+            # save into database
+            # prepare the key values to be stored
+            new_data = { "prompt_text": prompt_text, "response": content, "created_date": datetime.now()}
+            googleai_text_col.insert_one(new_data)
+            flash("The output/response has been successfully generated. Please check the result below.")
+            
+        except:
+            flash("error calling the model")
+
+        # get the data from database
+        text_data = googleai_text_col.find({}).sort("_id", -1)
+        text_data_list = list(text_data)
+        
+        return render_template("google_text_generation.html", output=content, prompt_text=prompt_text, data=text_data_list)
+    
+    # else (not POST aka GET) then
+    # show the form and get the latest data from database
+    text_data = googleai_text_col.find({}).sort("_id", -1)
+    text_data_list = list(text_data)
+
+    return render_template("google_text_generation.html", data=text_data_list)
+
+# Get Google AI generated text detail
+@app.route('/google_text_generation/<id>')
+def google_text_generation_detail(id):
+    data = ""
+    try:
+        _id_converted = ObjectId(id)
+        search_filter = {"_id": _id_converted} # _id is key and _id_converted is the converted _id
+        data = googleai_text_col.find_one(search_filter) # get one project data matched with _id
+    except:
+        print("ID is not found/invalid")
+    
+    return render_template("google_text_generation_detail.html", data=data)
 
 @app.route('/logout')
 def logout():

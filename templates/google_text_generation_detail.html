@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block title %}
+Chat with Meta Llama 3
+{% endblock %}
+{% block content %}
+<!--Section: AI DEMO -->
+<section class="my-3 text-center card">
+    <h4 class="text-center py-3 text-decoration-underline"><a href="{{ url_for('google_text_generation') }}">Chat with Google AI (Text Generation)</a></h4>
+    <p class="mx-4">
+       Chat with Google AI (Text Generation)
+        Source: https://ai.google.dev/gemini-api/docs/text-generation
+    </p>
+    {% include "flashmessage.html" %}
+    <div class="row d-flex justify-content-center">
+        {% if data %}
+        <div class="col-md-4 m-2 border rounded-5">
+            <h4 class="my-2">Input Text</h4>
+            <p class="text-start">{{ data.prompt_text | e}}</p>
+
+        </div>
+        <div class="col-md-7 m-2 border rounded-5">
+            <h4 class="my-2">Generated Response/Output</h4>
+            {% if data %}
+                <p class="text-start">{{ data.response.replace('\n', '<br>')|safe }}</p>
+            {% endif %}
+        </div>
+        {% else %}
+        <h4 class="text-center py-3 text-decoration-underline">Sorry. Data is not found.</h4>
+        {% endif %}
+    </div>
+
+</section>
+{% endblock %}

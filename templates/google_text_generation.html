@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block title %}
+Chat with Meta Llama 3
+{% endblock %}
+{% block content %}
+<!--Section: AI DEMO -->
+<section class="my-3 text-center card">
+    <h4 class="text-center py-3 text-decoration-underline">Chat with Google AI (Text Generation)</h4>
+    <p class="mx-4">
+       Chat with Google AI (Text Generation)
+        Source: https://ai.google.dev/gemini-api/docs/text-generation
+    </p>
+    {% include "flashmessage.html" %}
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-4 m-2 border rounded-5">
+            <h4 class="my-2">Input Text</h4>
+            <form method="POST" action="{{ url_for('google_text_generation') }}">
+                <div class="mb-4">
+                    <label class="form-label" for="image">Please write your text input or prompt here.</label>
+                    <textarea class="form-control" rows="7" id="prompt_text" name="prompt_text" required>{{prompt_text or "What is the meaning of life?"}}</textarea>
+                </div>
+
+                <!-- Submit button -->
+                <button type="submit" class="btn btn-primary btn-block mb-4">
+                    SUBMIT
+                </button>
+
+            </form>
+
+        </div>
+        <div class="col-md-7 m-2 border rounded-5">
+            <h4 class="my-2">Generated Response/Output</h4>
+            {% if output %}
+                <p class="text-start">{{ output.replace('\n', '<br>')|safe }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- show History data -->
+    <h4 class="text-center py-3 text-decoration-underline">History of generated response/output</h4>
+
+    {% if data %}
+    <div class="row d-flex justify-content-center">
+        <div class="col-md-10 border rounded-5 m-4">
+            <ul class="list-group list-group-light">
+                {% for item in data %}
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold"><a href="{{ url_for('google_text_generation_detail', id=item._id) }}">{{ item.prompt_text|e}}</a></div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {%else%}
+    <p class="text-center">No data yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

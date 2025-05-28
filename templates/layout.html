@@ -40,7 +40,7 @@
             <div class="container">
             <a class="navbar-brand nav-link" href="#">
                 <img
-                src="static\img\icon_chef.png"
+                src="{{ url_for('static', filename='img/icon_chef.png') }}"
                 height="20"
                 alt="MDB Logo"
                 loading="lazy"
@@ -61,16 +61,27 @@
                             <a class="nav-link" href="{{ url_for('index') }}">Home</a>
                         </li>
                         <li class="nav-item pe-2">
+                            <a class="nav-link" href="{{ url_for('savedrecipes') }}">Saved Recipes</a>
+                        </li>
+                        <li class="nav-item pe-2">
                             <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
+                        </li>
+                        <li class="nav-item pe-2 dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuAIDEMO" role="button"
+                                data-mdb-toggle="dropdown" aria-expanded="false">
+                                Recipe AI
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuAIDEMO">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('google_text_generation') }}">Google AI: Recipe Generator</a>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
 
                     <!-- right menu -->
                     <ul class="navbar-nav d-flex flex-row">
                         {% if 'user_email' in session %}
-                            <li class="nav-item me-3 me-lg-0">
-                                <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
-                            </li>
                             <li class="nav-item me-3 me-lg-0">
                                 <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                             </li>

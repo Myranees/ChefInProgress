@@ -49,7 +49,17 @@
         {% for step in data.instructions %}
             <div class="p-4 mb-3 {% if loop.index is even %}bg-primary-subtle{% else %}bg-light{% endif %} rounded-4 shadow-sm">
                 <h5 class="fw-semibold mb-2">Step {{ loop.index }}</h5>
-                <p>{{ step }}</p>
+
+                {# Handle both string and dictionary formats #}
+                {% if step is string %}
+                    <p>{{ step }}</p>
+                {% elif step.text is defined %}
+                    <p>{{ step.text }}</p>
+                    {% if step.image %}
+                        <img src="{{ url_for('static', filename=step.image) }}" class="img-fluid rounded my-2" style="height: 300px; object-fit: cover;">
+                    {% endif %}
+                {% endif %}
+                
             </div>
         {% endfor %}
     </div>

@@ -1,12 +1,11 @@
-{% extends "layout.html"%}
+{% extends "layout.html" %}
 {% block content %}
-
-<!--Section: addrecipe -->
+<!--Section: editrecipe -->
 <section>
     <div class="container my-5">
         <div class="card shadow-sm p-4 rounded-4">
             <h3 class="text-center mb-4">Create Your Own Recipe</h3>
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST">
 
                 <!--Add Recipe Title-->
                 <div class="mb-4">
@@ -16,14 +15,14 @@
 
                 <!--Add Recipe Image-->
                 <div class="mb-4">
-                    <label for="recipeImage" class="form-label">Add Image (Optional)</label>
-                    <input type="file" class="form-control" id="recipeImage" name="image">
+                    <label for="recipeDescription" class="form-label fw-semibold">Short Description</label>
+                    <textarea class="form-control rounded-3" id="recipeDescription" name="description" rows="3" placeholder="e.g., A warm and comforting dish made with spices and love." required></textarea>
                 </div>
 
                 <!--Add Recipe Description-->
                 <div class="mb-4">
-                    <label for="recipeDescription" class="form-label fw-semibold">Short Description</label>
-                    <textarea class="form-control rounded-3" id="recipeDescription" name="description" rows="3" placeholder="e.g., A warm and comforting dish made with spices and love." required></textarea>
+                    <label for="recipeDescription" class="form-label">Description</label>
+                    <textarea class="form-control" id="recipeDescription" name="description" rows="3" required></textarea>
                 </div>
 
                 <!--Add Recipe Cuisine Categories-->
@@ -47,13 +46,9 @@
                         <input type="text" class="form-control rounded-3" id="prepTime" name="prep_time" placeholder="e.g., 20 minutes" required>
                     </div>
                     <div class="col-md-6">
-                        <label for="cookTime" class="form-label fw-semibold">Cook Time</label>
-                        <input type="text" class="form-control" id="cookTime" name="cook_time" placeholder="e.g., 30 minutes" required>
-                    </div>
-                    <div class="col-md-6">
                         <label for="servings" class="form-label fw-semibold">Servings</label>
                         <input type="number" class="form-control rounded-3" id="servings" name="servings" placeholder="e.g., 4" required>
-                    </div>    
+                    </div>
                 </div>
 
                 <!-- Ingredients -->
@@ -84,7 +79,7 @@
 
                         <!-- Step Image -->
                         <div class="input-group mb-2">
-                            <input type="file" class="form-control rounded-start" name="steps_images[]">
+                            <input type="file" class="form-control rounded-start" name="steps[]">
                             <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStepImage(this)">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
@@ -95,8 +90,8 @@
 
                 <!-- Submit Button -->
                 <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg px-5">Save Changes</button>
-                    <input type="button" class="btn btn-danger btn-lg px-5" value="Cancel" onclick="history.back()"/>
+                    <button type="submit" class="btn btn-primary btn-lg px-5">Update Changes</button>
+                    <button type="submit" class="btn btn-danger btn-lg px-5">Delete This Recipe</button>
                 </div>
             </form>
         </div>

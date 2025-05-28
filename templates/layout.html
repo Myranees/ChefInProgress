@@ -40,7 +40,7 @@
             <div class="container">
             <a class="navbar-brand nav-link" href="#">
                 <img
-                src="static\img\icon_chef.png"
+                src="{{ url_for('static', filename='img/icon_chef.png') }}"
                 height="20"
                 alt="MDB Logo"
                 loading="lazy"
@@ -61,7 +61,25 @@
                             <a class="nav-link" href="{{ url_for('index') }}">Home</a>
                         </li>
                         <li class="nav-item pe-2">
+<<<<<<< HEAD
                             <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
+=======
+                            <a class="nav-link" href="{{ url_for('savedrecipes') }}">Saved Recipes</a>
+                        </li>
+                        <li class="nav-item pe-2">
+                            <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
+                        </li>
+                        <li class="nav-item pe-2 dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuAIDEMO" role="button"
+                                data-mdb-toggle="dropdown" aria-expanded="false">
+                                Recipe AI
+                            </a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuAIDEMO">
+                                <li>
+                                    <a class="dropdown-item" href="{{ url_for('google_text_generation') }}">Google AI: Recipe Generator</a>
+                                </li>
+                            </ul>
+>>>>>>> 8461433bdacc53f029b95c300960f277d54ec280
                         </li>
                     </ul>
 
@@ -69,9 +87,12 @@
                     <ul class="navbar-nav d-flex flex-row">
                         {% if 'user_email' in session %}
                             <li class="nav-item me-3 me-lg-0">
+<<<<<<< HEAD
                                 <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a> <!-- nanti kita tukar to something else eg. timer or AI -->
                             </li>
                             <li class="nav-item me-3 me-lg-0">
+=======
+>>>>>>> 8461433bdacc53f029b95c300960f277d54ec280
                                 <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
                             </li>
                         {% else %}
@@ -117,7 +138,7 @@
     <!-- footer -->
     <footer class="bg-light text-center text-lg-start mt-5 bottom-0">
         <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
-          © 2025 Anis Sally Shamiera |
+          © 2025 Anis Sally Shamiera Nik |
           Built for Web Programming Project @ Sejong University
         </div>
     </footer>  

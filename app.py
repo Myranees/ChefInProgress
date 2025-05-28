@@ -30,8 +30,15 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 # set the config for upload folder
 app.config['UPLOAD_FOLDER'] = FULL_UPLOAD_FOLDER
 
+# Create directory if it doesn't exist
+os.makedirs(FULL_UPLOAD_FOLDER, exist_ok=True)
+
 # for session
 app.secret_key = 'fad62b7c1a6a9e67dbb66c3571a23ff2425650965f80047ea2fadce543b088cf'
+
+#accessing filename
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def index():
@@ -125,7 +132,14 @@ def savedrecipes():
 
 @app.route('/myrecipes')
 def myrecipes():
-    return render_template('myrecipes.html')
+    if 'user_email' not in session:
+        flash("Please login to view your saved recipes.")
+        return redirect(url_for('login'))
+
+    # Fetch uploaded recipes (recipes where prepared_by matches current user)
+    uploaded_recipes = list(recipe_col.find({'prepared_by': session['username']}))
+    
+    return render_template('myrecipes.html', uploaded_recipes=uploaded_recipes)
 
 @app.route('/recipe/title/<recipe_title>')
 def recipedetails(recipe_title):
@@ -156,8 +170,71 @@ def add_to_favorites(recipe_title):
             flash(f"{recipe_title} is already in your favorites.")
     return redirect(url_for('savedrecipes'))
 
-@app.route('/addrecipe')
+@app.route('/addrecipe', methods=['GET', 'POST'])
 def addrecipe():
+    if request.method == 'POST':
+        try:
+            # Extract form fields
+            title = request.form.get('title', '').strip()
+            category = request.form.get('cuisine', '').strip()
+            description = request.form.get('description', '').strip()
+            prep_time = request.form.get('prep_time', '').strip()
+            cook_time = request.form.get('cook_time', '').strip()
+            servings = request.form.get('servings', '').strip()
+            ingredients = request.form.get('ingredients[]', '').strip()
+            step_texts = [s.strip() for s in request.form.getlist('steps[]') if s.strip()]
+            step_images = request.files.getlist('steps_images[]')
+
+            # Basic validation
+            if not title or not category or not description or not ingredients or not step_texts:
+                flash("Please fill in all required fields.")
+                return redirect(url_for('addrecipe'))
+
+            # Recipe image
+            image_file = request.files.get('image')
+            image_filename = None
+            if image_file and allowed_file(image_file.filename):
+                filename = secure_filename(image_file.filename)
+                unique_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
+                image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+                image_file.save(image_path)
+                image_filename = f"uploads/{unique_name}"
+
+            # Step instructions with images
+            step_data = []
+            for i, text in enumerate(step_texts):
+                img_path = None
+                if i < len(step_images):
+                    img_file = step_images[i]
+                    if img_file and allowed_file(img_file.filename):
+                        step_filename = secure_filename(img_file.filename)
+                        step_unique = f"step_{datetime.now().strftime('%Y%m%d%H%M%S')}_{step_filename}"
+                        img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], step_unique))
+                        img_path = f"uploads/{step_unique}"
+                step_data.append({"text": text, "image": img_path})
+
+            # Recipe document
+            recipe = {
+                'title': title,
+                'category': category,
+                'prepared_by': session.get('username', 'Anonymous'),
+                'prep_time': prep_time,
+                'cook_time': cook_time,
+                'servings': servings,
+                'image': image_filename,
+                'description': description,
+                'ingredients': ingredients,
+                'instructions': step_data
+            }
+
+            recipe_col.insert_one(recipe)
+            flash("Recipe added successfully!")
+            return redirect(url_for('myrecipes'))
+
+        except Exception as e:
+            flash(f"An error occurred while saving: {str(e)}")
+            return redirect(url_for('addrecipe'))
+
     return render_template('addrecipe.html')
 
 @app.route('/editrecipe')

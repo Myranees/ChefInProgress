@@ -15,29 +15,31 @@ height: 400px;
                         Chef & Friends helps you manage your fridge and discover new meals, 
                         all in one friendly and easy-to-use web app.
                     </p>
-                    <div class="mx-auto" style="width: 66%;">
-                        <div class="input-group rounded-pill shadow-sm overflow-hidden">
-                            <span class="input-group-text bg-white border-end-0 px-4">
-                                <i class="fa-solid fa-magnifying-glass text-muted"></i>
-                            </span>
-                            <input 
-                                type="search" 
-                                class="form-control border-start-0 border-end-0 px-3 py-3 fs-5" 
-                                placeholder="Search for a recipe" 
-                                aria-label="Search" 
-                            />
-                            <button 
-                                class="btn btn-primary px-4 rounded-end-pill" 
-                                type="button"
-                            >
-                                Search
-                            </button>
-                        </div>
-                    </div>
+                    <form action="{{ url_for('search_by_cuisine') }}" method="GET" class="mx-auto" style="width: 66%;">
+  <div class="input-group rounded-pill shadow-sm overflow-hidden">
+      <span class="input-group-text bg-white border-end-0 px-4">
+          <i class="fa-solid fa-magnifying-glass text-muted"></i>
+      </span>
+      <input 
+          type="search" 
+          class="form-control border-start-0 border-end-0 px-3 py-3 fs-5" 
+          placeholder="Search for a recipe" 
+          aria-label="Search"
+          name="query"
+      />
+      <button 
+          class="btn btn-primary px-4 rounded-end-pill" 
+          type="submit"
+      >
+          Search
+      </button>
+  </div>
+</form>
               </div>
           </div>
       </div>
   </div>
+
 {% endblock %}
 
 {% block content %}
@@ -91,7 +93,7 @@ height: 400px;
         <h3 class="text-left py-3 text-decoration-underline fw-bold mb-2">Search by Cuisine</h3>
 
         <!-- Search Form -->
-        <form action="/search" method="GET" class="d-flex align-items-center">
+        <form action="/select" method="GET" class="d-flex align-items-center">
         <select class="form-select w-auto me-3" name="cuisine" required>
                 <option value="" disabled selected>Select Cuisine</option>
                 <option value="malay">Malay</option>

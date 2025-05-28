@@ -10,11 +10,7 @@ from werkzeug.utils import secure_filename # for secure name
 from datetime import datetime #datetime
 
 client = MongoClient("mongodb://localhost:27017/") # connect on the "localhost" host and port 27017
-<<<<<<< HEAD
-db = client["webtest"] # use/create "webapp" database
-=======
 db = client["chef"] # use/create "webapp" database
->>>>>>> 8461433bdacc53f029b95c300960f277d54ec280
 recipe_col = db.recipe # use/create "recipe" collection
 user_col = db['webusers'] # use/create "user" collection
 

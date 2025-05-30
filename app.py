@@ -128,7 +128,7 @@ def savedrecipes():
     # Fetch recipes that match any of the saved titles
     recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
 
-    return render_template('savedrecipes.html', recipes=recipes)
+    return render_template('savedrecipes.html', recipes=recipes, user_favorites=favorite_titles)
 
 @app.route('/select')
 def search_by_cuisine():
@@ -186,6 +186,15 @@ def add_to_favorites(recipe_title):
         else:
             flash(f"{recipe_title} is already in your favorites.")
     return redirect(url_for('savedrecipes'))
+
+@app.route('/remove_from_favorites/<recipe_title>')
+def remove_from_favorites(recipe_title):
+    if 'user_email' not in session:
+        flash("You must be logged in to remove favorites.")
+        return redirect(url_for('login'))
+
+    user_col.update_one({'email': session['user_email']}, {'$pull': {'favorites': recipe_title}})
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/addrecipe', methods=['GET', 'POST'])
 def addrecipe():

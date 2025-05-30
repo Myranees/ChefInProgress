@@ -39,9 +39,17 @@
                     <!-- Action Buttons -->
                     <div class="d-flex justify-content-between align-items-center px-2">
                         <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}" class="btn btn-primary flex-grow-1 me-2">Make This</a>
-                        <button class="btn btn-outline-warning" title="Add to Favorites">
-                            <i class="fas fa-bookmark"></i>
-                        </button>
+
+                        <!-- Toggle Save Icon -->
+                        {% set is_favorited = recipe.title in user_favorites %}
+                        <a href="{{ url_for('remove_from_favorites' if is_favorited else 'add_to_favorites', recipe_title=recipe.title) }}"
+                        class="btn btn-outline-warning" title="{{ 'Remove from Favorites' if is_favorited else 'Add to Favorites' }}">
+                            {% if is_favorited %}
+                                <i class="fas fa-bookmark"></i>  {# Solid bookmark if saved #}
+                            {% else %}
+                                <i class="far fa-bookmark"></i>  {# Outline bookmark if unsaved #}
+                            {% endif %}
+                        </a>
                     </div>
                 </div>
             </div>

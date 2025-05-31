@@ -1,5 +1,5 @@
 # import libraries
-from flask import Flask, render_template, url_for, redirect, request, session, flash, abort
+from flask import Flask, render_template, url_for, redirect, request, session, flash, abort, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId #import this to convert ObjectID from string to it's datatype in MongoDB
 import functools
@@ -42,10 +42,34 @@ app.secret_key = 'fad62b7c1a6a9e67dbb66c3571a23ff2425650965f80047ea2fadce543b088
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+#convert hour in time to minutes 
+def convert_to_minutes(time_str):
+    try:
+        if not time_str:
+            return 0
+        time_str = time_str.lower()
+        num = int(time_str.split()[0])
+        if 'hour' in time_str:
+            return num * 60
+        elif 'min' in time_str:
+            return num
+        else:
+            return 0
+    except:
+        return 0
+
 @app.route('/')
 def index():
     recipes = list(recipe_col.find()) 
-    return render_template('home.html', recipes=recipes)
+    cuisine = request.args.get('cuisine')
+    filtered_recipes = []
+    if cuisine:
+        filtered_recipes = list(recipe_col.find({"category": {"$regex": f"^{cuisine}$", "$options": "i"}}))
+        for recipe in filtered_recipes:
+            prep_time = convert_to_minutes(recipe.get("prep_time", "0"))
+            cook_time = convert_to_minutes(recipe.get("cook_time", "0"))
+            recipe['total_time'] = prep_time + cook_time
+    return render_template('home.html', recipes=recipes, filtered_recipes=filtered_recipes, selected_cuisine=cuisine)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -131,23 +155,6 @@ def savedrecipes():
     recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
 
     return render_template('savedrecipes.html', recipes=recipes, user_favorites=favorite_titles)
-
-@app.route('/select')
-def search_by_cuisine():
-    selected_cuisine = request.args.get('cuisine')  # get selected cuisine from form
-    if not selected_cuisine:
-        flash("Please select a cuisine type.")
-        return redirect(url_for('index'))
-
-    # Query MongoDB collection for matching recipes
-    recipes = list(recipe_col.find({
-        'category': {'$regex': f'^{selected_cuisine}$', '$options': 'i'}
-    }))
-
-    if not recipes:
-        flash(f"No recipes found for {selected_cuisine.capitalize()} cuisine.")
-    
-    return render_template('selected_results.html', recipes=recipes, cuisine=selected_cuisine)
 
 @app.route('/myrecipes')
 def myrecipes():

@@ -1,33 +1,63 @@
 {% extends "layout.html" %}
-{% block title %}
-Chat with Meta Llama 3
-{% endblock %}
 {% block content %}
-<!--Section: AI DEMO -->
-<section class="my-3 text-center card">
-    <h4 class="text-center py-3 text-decoration-underline"><a href="{{ url_for('google_text_generation') }}">Chat with Google AI (Text Generation)</a></h4>
-    <p class="mx-4">
-       Chat with Google AI (Text Generation)
-        Source: https://ai.google.dev/gemini-api/docs/text-generation
-    </p>
-    {% include "flashmessage.html" %}
-    <div class="row d-flex justify-content-center">
-        {% if data %}
-        <div class="col-md-4 m-2 border rounded-5">
-            <h4 class="my-2">Input Text</h4>
-            <p class="text-start">{{ data.prompt_text | e}}</p>
-
-        </div>
-        <div class="col-md-7 m-2 border rounded-5">
-            <h4 class="my-2">Generated Response/Output</h4>
-            {% if data %}
-                <p class="text-start">{{ data.response.replace('\n', '<br>')|safe }}</p>
-            {% endif %}
-        </div>
-        {% else %}
-        <h4 class="text-center py-3 text-decoration-underline">Sorry. Data is not found.</h4>
-        {% endif %}
+<section class="my-5">
+    <div class="container">
+        <h3 class="text-center fw-bold text-decoration-underline mb-3">🧠 AI Recipe Assistant</h3>
+        <p class="text-center text-muted mb-4">
+            Describe your ingredients or cravings, and let our AI chef suggest something delicious!
+            <br>
+            <small>Powered by <a href="https://ai.google.dev/gemini-api/docs/text-generation" target="_blank">Google Gemini Text Generation API</a></small>
+        </p>
     </div>
 
+    {% if data %}
+    <div>
+        <div class="row">
+            <div class="col-md-4 d-flex flex-column">
+                <!-- Input Section -->
+                <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 flex-grow-1">
+                    <h5 class="text-center mb-3">🥕 What's in your kitchen?</h5>
+                    <form method="POST" action="{{ url_for('google_text_generation') }}">
+                        <label for="prompt_text" class="form-label">Enter ingredients, preferences, or a craving:</label>
+                        <textarea class="form-control mb-3" rows="6" id="prompt_text" name="prompt_text" required>{{ data.prompt_text | e}}</textarea>
+                    </form>
+                </div>
+                
+                <!-- History Section -->
+                <!-- Want  to try to link other recent searches as well -->
+                <div class="card border-0 shadow-sm rounded-4 p-3 flex-grow-1">
+                    <h5 class="text-center mb-3 text-decoration-underline">📜 Prompt History</h5>
+                    {% if data %}
+                    <ul class="list-group list-group-flush" style="max-height: 300px; overflow-y: auto;">
+                        {% for item in data %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('google_text_generation_detail', id=item._id) }}" class="text-decoration-none text-dark">
+                                {{ item.prompt_text | e }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p class="text-muted text-center">No recipe prompts submitted yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Result -->
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm rounded-4 p-4 h-100">
+                    <h5 class="text-center mb-3">🍽 Suggested Recipe</h5>
+                    {% if data %}
+                    <div class="bg-light p-3 rounded-4" style="max-height: 650px; overflow-y: auto;">
+                        <p class="text-start">{{ data.response | format_output }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <h4 class="text-center py-3 text-decoration-underline">Sorry. Data is not found.</h4>
+    {% endif %}
 </section>
 {% endblock %}

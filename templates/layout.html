@@ -81,9 +81,20 @@
 
                     <!-- right menu -->
                     <ul class="navbar-nav d-flex flex-row">
-                        {% if 'user_email' in session %}
-                            <li class="nav-item me-3 me-lg-0">
-                                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                        {% if user %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <img src="{{ url_for('static', filename='uploads/' + (user.profile_pic or 'default.jpg')) }}"
+                                        alt="Profile"
+                                        class="rounded-circle"
+                                        width="45"
+                                        height="45">
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <li><a class="dropdown-item disabled" href="#">{{ session.get('username') }}</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
+                                    <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
+                                </ul>
                             </li>
                         {% else %}
                             <li class="nav-item me-3 me-lg-0">
@@ -136,6 +147,9 @@
     <!-- JS files -->
     <script type="text/javascript" src="{{ url_for('static', filename='js/mdb.min.js') }}"></script>
     <script src="{{ url_for('static', filename='js/recipe-form.js') }}"></script>
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

@@ -42,8 +42,11 @@ def allowed_file(filename):
 
 @app.route('/')
 def index():
-    recipes = list(recipe_col.find()) 
-    return render_template('home.html', recipes=recipes)
+    recipes = list(recipe_col.find())
+    user = None
+    if 'user_email' in session:
+        user = user_col.find_one({'email': session['user_email']})
+    return render_template('home.html', recipes=recipes, user=user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -107,7 +110,8 @@ def register():
             "username": username,
             "email": email,
             "password": hashed_password,
-            "favorite": []
+            "favorite": [],
+            "profile_pic": "default.jpg"
         })
 
         flash("Registration successful! Please log in.")
@@ -257,6 +261,66 @@ def addrecipe():
 @app.route('/editrecipe')
 def editrecipe():
     return render_template('editrecipe.html')
+
+@app.route('/profile', methods=['GET', 'POST'])
+def profile():
+    if 'user_email' not in session:
+        flash("Please log in to access your profile.")
+        return redirect(url_for('login'))
+
+    user = user_col.find_one({'email': session['user_email']})
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        email = request.form.get('email', '').strip()
+        new_password = request.form.get('password', '').strip()
+        old_password = request.form.get('old_password', '').strip()
+        profile_pic = request.files.get('profile_pic')
+
+        update_fields = {
+            'username': name,
+            'email': email
+        }
+
+        # Check and update password only if provided
+        if new_password:
+            if not old_password:
+                flash("Please enter your current password to set a new one.", "danger")
+                return redirect(url_for('profile'))
+
+            # Verify old password
+            if not bcrypt.checkpw(old_password.encode('utf-8'), user['password']):
+                flash("Incorrect current password.", "danger")
+                return redirect(url_for('profile'))
+
+            hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+            update_fields['password'] = hashed_password
+
+        # Handle profile picture upload
+        if profile_pic and allowed_file(profile_pic.filename):
+            filename = secure_filename(profile_pic.filename)
+            unique_name = f"profile_{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+            profile_pic.save(filepath)
+            update_fields['profile_pic'] = unique_name
+         
+        # Update user in DB
+        user_col.update_one({'email': session['user_email']}, {'$set': update_fields})
+
+        # Update session and reload user
+        session['user_email'] = email
+        session['username'] = name
+        flash("Profile updated successfully!")
+        return redirect(url_for('profile'))
+
+    return render_template('profile.html', user=user)
+
+@app.context_processor
+def inject_user():
+    user = None
+    if 'user_email' in session:
+        user = user_col.find_one({'email': session['user_email']})
+    return dict(user=user)
 
 # 1. Google AI: Text generation route
 @app.route('/google_text_generation', methods=['GET', 'POST'])

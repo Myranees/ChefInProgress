@@ -60,33 +60,37 @@
 
     <!-- Pagination -->
     <div class="text-center mt-5">
-        <p>Showing 1–10 of 50 recipes</p>
-    </div>
+    <p>Showing {{ (page - 1) * per_page + 1 }}–{{ (page - 1) * per_page + recipes|length }} of {{ total }} recipes</p>
+</div>
 
-    <div class="d-flex justify-content-center">
-        <nav aria-label="Recipe page navigation">
-            <ul class="pagination pagination-lg">
-                <!-- Previous -->
-                <li class="page-item disabled">
-                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
+<div class="d-flex justify-content-center">
+    <nav aria-label="Recipe page navigation">
+        <ul class="pagination pagination-lg">
+
+            <!-- Previous -->
+            <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('savedrecipes', page=page-1) }}" tabindex="-1" aria-disabled="{{ page == 1 }}">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <!-- Page Numbers -->
+            {% for p in range(1, total_pages + 1) %}
+                <li class="page-item {% if p == page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('savedrecipes', page=p) }}">{{ p }}</a>
                 </li>
+            {% endfor %}
 
-                <!-- Page Numbers -->
-                <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <!-- Next -->
+            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                <a class="page-link" href="{{ url_for('savedrecipes', page=page+1) }}" aria-disabled="{{ page == total_pages }}">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
 
-                <!-- Next -->
-                <li class="page-item">
-                    <a class="page-link" href="#">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+        </ul>
+    </nav>
+</div>
 
 </section>
 {% endblock %}

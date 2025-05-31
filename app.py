@@ -152,11 +152,28 @@ def savedrecipes():
     user = user_col.find_one({'email': session['user_email']})
     favorite_titles = user.get('favorites', [])
 
-    # Fetch recipes that match any of the saved titles
-    recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
+    # Fetch all recipes matching favorites
+    all_recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
 
-    return render_template('savedrecipes.html', recipes=recipes, user_favorites=favorite_titles)
+    # Pagination setup
+    per_page = 10
+    page = request.args.get('page', 1, type=int)  # get page number from query params, default 1
+    total = len(all_recipes)
+    start = (page - 1) * per_page
+    end = start + per_page
 
+    # Slice the list for current page
+    recipes = all_recipes[start:end]
+
+    total_pages = (total + per_page - 1) // per_page  # ceil division to get total pages
+
+    return render_template('savedrecipes.html',
+                           recipes=recipes,
+                           user_favorites=favorite_titles,
+                           page=page,
+                           total_pages=total_pages,
+                           total=total,
+                           per_page=per_page)
 @app.route('/myrecipes')
 def myrecipes():
     if 'user_email' not in session:

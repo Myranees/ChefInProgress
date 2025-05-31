@@ -1,57 +1,58 @@
 {% extends "layout.html" %}
-{% block jumbotron %}
 
 <!-- jumbotron -->
-<div class="p-5 text-center bg-image" style="
-background-image: url('{{ url_for("static", filename="img/home_jumbotron.jpg") }}');
-height: 400px;
-">
-      <div class="mask" style="background-color: rgba(0, 0, 0, 0.6);">
-          <div class="d-flex justify-content-center align-items-center h-100">
-              <div class="text-white">
-                    <h1 class="mb-3">Welcome to ChefInProgress</h1>
-                    <p class="mb-5 mx-auto text-center" style="width: 66%;">Your smart kitchen buddy. Find recipes, follow other cooks, and explore a wide variety of delicious dishes 
-                        — from local Malaysian favorites to international cuisine. 
-                        Chef & Friends helps you manage your fridge and discover new meals, 
-                        all in one friendly and easy-to-use web app.
-                    </p>
-                    <form action="{{ url_for('search_by_cuisine') }}" method="GET" class="mx-auto" style="width: 66%;">
-  <div class="input-group rounded-pill shadow-sm overflow-hidden">
-      <span class="input-group-text bg-white border-end-0 px-4">
-          <i class="fa-solid fa-magnifying-glass text-muted"></i>
-      </span>
-      <input 
-          type="search" 
-          class="form-control border-start-0 border-end-0 px-3 py-3 fs-5" 
-          placeholder="Search for a recipe" 
-          aria-label="Search"
-          name="query"
-      />
-      <button 
-          class="btn btn-primary px-4 rounded-end-pill" 
-          type="submit"
-      >
-          Search
-      </button>
-  </div>
-</form>
-              </div>
-          </div>
-      </div>
-  </div>
-
+{% block jumbotron %}
+<div class="p-5 text-center bg-image mb-4" style="
+    background-image: url('{{ url_for('static', filename='img/home_jumbotron.jpg') }}');
+    height: 400px;">
+    <div class="mask" style="background-color: rgba(0, 0, 0, 0.6); height: 100%;">
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="text-white w-100">
+                <h1 class="mb-3">Welcome to ChefInProgress</h1>
+                <p class="mb-5 mx-auto text-center" style="width: 66%;">
+                    Your smart kitchen buddy. Find recipes, follow other cooks, and explore a wide variety of delicious dishes
+                    — from local Malaysian favorites to international cuisine.
+                    Chef & Friends helps you manage your fridge and discover new meals,
+                    all in one friendly and easy-to-use web app.
+                </p>
+                <form action="{{ url_for('search_by_cuisine') }}" method="GET" class="mx-auto" style="width: 66%;">
+                    <div class="input-group rounded-pill shadow-sm overflow-hidden">
+                        <span class="input-group-text bg-white border-end-0 px-4">
+                            <i class="fa-solid fa-magnifying-glass text-muted"></i>
+                        </span>
+                        <input 
+                            type="search" 
+                            class="form-control border-start-0 border-end-0 px-3 py-3 fs-5"
+                            placeholder="Search for a recipe"
+                            aria-label="Search"
+                            name="query"
+                        />
+                        <button 
+                            class="btn btn-primary px-4 rounded-end-pill"
+                            type="submit"
+                        >
+                            Search
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block content %}
 
 <!-- Popular Recipes -->
 <section class="p-3 text-left">
-    <h3 class="text-left py-3 text-decoration-underline fw-bold mb-2">Popular Recipes</h3>
-    
-    <div class="row gx-5 text-center">
+    <div class= "row text-center mb-4">
+        <h2 class="fw-bold text-center"> Popular Recipes </h2>
+    </div>    
+    <div class="row gx-4 gy-4 text-center">
         {% for recipe in recipes[:4] %}
-        <div class="col-lg-3 col-md-12">
-            <div class="card shadow-3 rounded-5 h-100" style="width: 20rem;">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card shadow-3 rounded-5 h-100" style="width: 19rem;">
+
                 <!-- Wrap image with link to detail -->
                 <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}">
                     <img src="{{ url_for('static', filename=recipe.image) }}" class="card-img-top" style="height: 250px; object-fit: cover;" alt="Recipe Image">

@@ -8,6 +8,8 @@ import os
 from os.path import join, dirname, realpath
 from werkzeug.utils import secure_filename # for secure name
 from datetime import datetime #datetime
+import re
+from markupsafe import Markup
 
 client = MongoClient("mongodb://localhost:27017/") # connect on the "localhost" host and port 27017
 db = client["chef"] # use/create "webapp" database
@@ -267,6 +269,12 @@ def addrecipe():
 def editrecipe():
     return render_template('editrecipe.html')
 
+@app.template_filter('format_output')
+def markdown_bold(text):
+    text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
+    text = text.replace('\n', '<br>')
+    return Markup(text)  # Mark as safe HTML
+
 # 1. Google AI: Text generation route
 @app.route('/google_text_generation', methods=['GET', 'POST'])
 def google_text_generation():
@@ -326,4 +334,4 @@ def test():
     return render_template('test.html')
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(debug=True, host='0.0.0.0', port=5000)

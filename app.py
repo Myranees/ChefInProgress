@@ -1,5 +1,5 @@
 # import libraries
-from flask import Flask, render_template, url_for, redirect, request, session, flash, abort
+from flask import Flask, render_template, url_for, redirect, request, session, flash, abort, jsonify
 from pymongo import MongoClient
 from bson.objectid import ObjectId #import this to convert ObjectID from string to it's datatype in MongoDB
 import functools
@@ -8,6 +8,8 @@ import os
 from os.path import join, dirname, realpath
 from werkzeug.utils import secure_filename # for secure name
 from datetime import datetime #datetime
+import re
+from markupsafe import Markup
 
 client = MongoClient("mongodb://localhost:27017/") # connect on the "localhost" host and port 27017
 db = client["chef"] # use/create "webapp" database
@@ -40,13 +42,34 @@ app.secret_key = 'fad62b7c1a6a9e67dbb66c3571a23ff2425650965f80047ea2fadce543b088
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+#convert hour in time to minutes 
+def convert_to_minutes(time_str):
+    try:
+        if not time_str:
+            return 0
+        time_str = time_str.lower()
+        num = int(time_str.split()[0])
+        if 'hour' in time_str:
+            return num * 60
+        elif 'min' in time_str:
+            return num
+        else:
+            return 0
+    except:
+        return 0
+
 @app.route('/')
 def index():
-    recipes = list(recipe_col.find())
-    user = None
-    if 'user_email' in session:
-        user = user_col.find_one({'email': session['user_email']})
-    return render_template('home.html', recipes=recipes, user=user)
+    recipes = list(recipe_col.find()) 
+    cuisine = request.args.get('cuisine')
+    filtered_recipes = []
+    if cuisine:
+        filtered_recipes = list(recipe_col.find({"category": {"$regex": f"^{cuisine}$", "$options": "i"}}))
+        for recipe in filtered_recipes:
+            prep_time = convert_to_minutes(recipe.get("prep_time", "0"))
+            cook_time = convert_to_minutes(recipe.get("cook_time", "0"))
+            recipe['total_time'] = prep_time + cook_time
+    return render_template('home.html', recipes=recipes, filtered_recipes=filtered_recipes, selected_cuisine=cuisine)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -132,24 +155,7 @@ def savedrecipes():
     # Fetch recipes that match any of the saved titles
     recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
 
-    return render_template('savedrecipes.html', recipes=recipes)
-
-@app.route('/select')
-def search_by_cuisine():
-    selected_cuisine = request.args.get('cuisine')  # get selected cuisine from form
-    if not selected_cuisine:
-        flash("Please select a cuisine type.")
-        return redirect(url_for('index'))
-
-    # Query MongoDB collection for matching recipes
-    recipes = list(recipe_col.find({
-        'category': {'$regex': f'^{selected_cuisine}$', '$options': 'i'}
-    }))
-
-    if not recipes:
-        flash(f"No recipes found for {selected_cuisine.capitalize()} cuisine.")
-    
-    return render_template('selected_results.html', recipes=recipes, cuisine=selected_cuisine)
+    return render_template('savedrecipes.html', recipes=recipes, user_favorites=favorite_titles)
 
 @app.route('/myrecipes')
 def myrecipes():
@@ -190,6 +196,15 @@ def add_to_favorites(recipe_title):
         else:
             flash(f"{recipe_title} is already in your favorites.")
     return redirect(url_for('savedrecipes'))
+
+@app.route('/remove_from_favorites/<recipe_title>')
+def remove_from_favorites(recipe_title):
+    if 'user_email' not in session:
+        flash("You must be logged in to remove favorites.")
+        return redirect(url_for('login'))
+
+    user_col.update_one({'email': session['user_email']}, {'$pull': {'favorites': recipe_title}})
+    return redirect(request.referrer or url_for('home'))
 
 @app.route('/addrecipe', methods=['GET', 'POST'])
 def addrecipe():
@@ -261,6 +276,12 @@ def addrecipe():
 @app.route('/editrecipe')
 def editrecipe():
     return render_template('editrecipe.html')
+
+@app.template_filter('format_output')
+def markdown_bold(text):
+    text = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', text)
+    text = text.replace('\n', '<br>')
+    return Markup(text)  # Mark as safe HTML
 
 @app.route('/profile', methods=['GET', 'POST'])
 def profile():
@@ -381,4 +402,4 @@ def test():
     return render_template('test.html')
 
 if __name__ == '__main__':
-    app.run(debug=True) 
+    app.run(debug=True, host='0.0.0.0', port=5000)

@@ -101,6 +101,23 @@ def register():
     # if GET request, show registration form
     return render_template('register.html')
 
+@app.route('/select')
+def search_by_cuisine():
+    selected_cuisine = request.args.get('cuisine')  # get selected cuisine from form
+    if not selected_cuisine:
+        flash("Please select a cuisine type.")
+        return redirect(url_for('index'))
+
+    # Query MongoDB collection for matching recipes
+    recipes = list(recipe_col.find({
+        'category': {'$regex': f'^{selected_cuisine}$', '$options': 'i'}
+    }))
+
+    if not recipes:
+        flash(f"No recipes found for {selected_cuisine.capitalize()} cuisine.")
+    
+    return render_template('selected_results.html', recipes=recipes, cuisine=selected_cuisine)
+
 @app.route('/myrecipes')
 def myrecipes():
     username = session.get('username')

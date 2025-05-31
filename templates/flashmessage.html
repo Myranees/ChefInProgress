@@ -1,10 +1,18 @@
 {% with messages = get_flashed_messages() %}
-{% if messages %}
-<div class="alert alert-primary" role="alert" data-mdb-color="primary">
-    <i class="fas fa-info-circle me-3"></i>
-    {% for message in messages %}
-        <p>{{ message }}</p>
-    {% endfor %}
-</div>
-{% endif %}
+    {% if messages %}
+        <div class="toast show fade position-fixed top-0 end-0 m-4 rounded shadow" 
+            role="alert" aria-live="assertive" aria-atomic="true" 
+            data-mdb-autohide="true" data-mdb-delay="5000"
+            style="border-radius: 2rem;">
+            <div class="toast-header bg-primary text-white rounded" style="border-radius: 2rem;">
+                <i class="fas fa-info-circle me-2"></i>
+                <span>
+                    {% for message in messages %}
+                        {{ message }}{% if not loop.last %}<br>{% endif %}
+                    {% endfor %}
+                </span>
+                <button type="button" class="btn-close btn-close-white ms-auto" data-mdb-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    {% endif %}
 {% endwith %}

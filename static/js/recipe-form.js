@@ -33,7 +33,7 @@ function addStep() {
             </button>
         </div>
         <div class="input-group mb-2">
-            <input type="file" class="form-control" name="step_images[]" accept="image/*">
+            <input type="file" class="form-control" name="steps_images[]" accept="image/*">
             <button type="button" class="btn btn-outline-danger remove-btn" onclick="removeStepImage(this)">
                 <i class="fa-solid fa-xmark"></i>
             </button>

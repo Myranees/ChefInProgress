@@ -234,7 +234,7 @@ def addrecipe():
             prep_time = request.form.get('prep_time', '').strip()
             cook_time = request.form.get('cook_time', '').strip()
             servings = request.form.get('servings', '').strip()
-            ingredients = request.form.get('ingredients[]', '').strip()
+            ingredients = [s.strip() for s in request.form.getlist('ingredients[]') if s.strip()]
             step_texts = [s.strip() for s in request.form.getlist('steps[]') if s.strip()]
             step_images = request.files.getlist('steps_images[]')
 
@@ -261,7 +261,7 @@ def addrecipe():
                     img_file = step_images[i]
                     if img_file and allowed_file(img_file.filename):
                         step_filename = secure_filename(img_file.filename)
-                        step_unique = f"step_{datetime.now().strftime('%Y%m%d%H%M%S')}_{step_filename}"
+                        step_unique = f"step_{i}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{step_filename}"
                         img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], step_unique))
                         img_path = f"uploads/{step_unique}"
                 step_data.append({"text": text, "image": img_path})

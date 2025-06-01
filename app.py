@@ -475,6 +475,13 @@ def inject_user():
 # 1. Google AI: Text generation route
 @app.route('/google_text_generation', methods=['GET', 'POST'])
 def google_text_generation():
+    # Check if user is logged in
+    if 'user_email' not in session:
+        flash("Please log in to access your profile.")
+        return redirect(url_for('login'))
+    
+    current_user_id = session['username']  # Assuming you store user ID in session
+    
     # handling a form is submitted via POST aka login data
     if request.method == "POST":
         # receive text data from POST form
@@ -487,7 +494,7 @@ def google_text_generation():
             content = AI_APIs.generate_text_gemini(prompt_text)
             # save into database
             # prepare the key values to be stored
-            new_data = { "prompt_text": prompt_text, "response": content, "created_date": datetime.now()}
+            new_data = { "prompt_text": prompt_text, "response": content, "created_date": datetime.now(), "user_id": current_user_id}
             googleai_text_col.insert_one(new_data)
             flash("The output/response has been successfully generated. Please check the result below.")
             
@@ -495,14 +502,14 @@ def google_text_generation():
             flash("error calling the model")
 
         # get the data from database
-        text_data = googleai_text_col.find({}).sort("_id", -1)
+        text_data = googleai_text_col.find({"user_id": current_user_id}).sort("_id", -1)
         text_data_list = list(text_data)
         
         return render_template("google_text_generation.html", output=content, prompt_text=prompt_text, data=text_data_list)
     
     # else (not POST aka GET) then
     # show the form and get the latest data from database
-    text_data = googleai_text_col.find({}).sort("_id", -1)
+    text_data = googleai_text_col.find({"user_id": current_user_id}).sort("_id", -1)
     text_data_list = list(text_data)
 
     return render_template("google_text_generation.html", data=text_data_list)
@@ -510,11 +517,20 @@ def google_text_generation():
 # Get Google AI generated text detail
 @app.route('/google_text_generation/<id>')
 def google_text_generation_detail(id):
+    if 'user_email' not in session:
+        flash("Please log in to access your profile.")
+        return redirect(url_for('login'))
+    
+    current_user_id = session['username']
     data = ""
     try:
         _id_converted = ObjectId(id)
-        search_filter = {"_id": _id_converted} # _id is key and _id_converted is the converted _id
+        search_filter = {"_id": _id_converted, "user_id": current_user_id } # _id is key and _id_converted is the converted _id
         data = googleai_text_col.find_one(search_filter) # get one project data matched with _id
+        
+        if not data:
+            flash("Record not found or you don't have permission to view it")
+            return redirect(url_for('google_text_generation'))
     except:
         print("ID is not found/invalid")
     

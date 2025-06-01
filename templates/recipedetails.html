@@ -34,7 +34,13 @@
                 <div class= "ms-3">
                     <ul>
                         {% for item in data.ingredients %}
-                            <li class="mb-3">{{ item }}</li>
+                            {% if item is string %}
+                                <li class="mb-3">{{ item }}</li>
+                            {% elif item.name is defined %}
+                                <li class="mb-3">{{ item.name }}</li>
+                            {% else %}
+                                <li class="mb-3">{{ item }}</li>  {# Fallback #}
+                            {% endif %}
                         {% endfor %}
                     </ul>
                 </div>

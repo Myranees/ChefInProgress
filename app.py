@@ -156,7 +156,7 @@ def savedrecipes():
     all_recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
 
     # Pagination setup
-    per_page = 10
+    per_page = 12
     page = request.args.get('page', 1, type=int)  # get page number from query params, default 1
     total = len(all_recipes)
     start = (page - 1) * per_page

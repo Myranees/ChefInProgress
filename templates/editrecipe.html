@@ -4,50 +4,57 @@
 <section>
     <div class="container my-5">
         <div class="card shadow-sm p-4 rounded-4">
-            <h3 class="text-center mb-4">Create Your Own Recipe</h3>
-            <form method="POST">
+            <h3 class="text-center mb-4">Edit Your Recipe</h3>
+            <form method="POST" enctype="multipart/form-data">
 
                 <!--Add Recipe Title-->
                 <div class="mb-4">
                     <label for="recipeTitle" class="form-label fw-semibold">Recipe Title</label>
-                    <input type="text" class="form-control rounded-3" id="recipeTitle" name="title" placeholder="e.g., Classic Chicken Curry" required>
+                    <input type="text" class="form-control rounded-3" id="recipeTitle" name="title" value="{{ recipe.title }}">
                 </div>
 
                 <!--Add Recipe Image-->
                 <div class="mb-4">
-                    <label for="recipeDescription" class="form-label fw-semibold">Short Description</label>
-                    <textarea class="form-control rounded-3" id="recipeDescription" name="description" rows="3" placeholder="e.g., A warm and comforting dish made with spices and love." required></textarea>
+                    <label for="recipeImage" class="form-label">Add Image (Optional)</label>
+                     {% if recipe.image %}
+                    <div class="mb-2">
+                        <img src="{{ url_for('static', filename=recipe.image) }}" class="img-thumbnail" style="max-height: 200px;">
+                        <p class="text-muted small mt-1">Current image</p>
+                    </div>
+                    {% endif %}
+                    <input type="file" class="form-control" id="recipeImage" name="image">
+                    <div class="form-text">Upload new image to replace current one</div>
                 </div>
 
                 <!--Add Recipe Description-->
                 <div class="mb-4">
-                    <label for="recipeDescription" class="form-label">Description</label>
-                    <textarea class="form-control" id="recipeDescription" name="description" rows="3" required></textarea>
+                    <label for="recipeDescription" class="form-label fw-semibold">Short Description</label>
+                    <textarea class="form-control" id="recipeDescription" name="description" rows="3">{{ recipe.description }}</textarea>
                 </div>
 
                 <!--Add Recipe Cuisine Categories-->
                 <div class="mb-4">
                     <label for="cuisine" class="form-label fw-semibold">Cuisine</label>
                     <select class="form-select rounded-3" id="cuisine" name="cuisine" required>
-                        <option value="" disabled selected>Select Cuisine</option>
-                        <option value="malay">Malay</option>
-                        <option value="chinese">Chinese</option>
-                        <option value="indian">Indian</option>
-                        <option value="thai">Thai</option>
-                        <option value="western">Western</option>
-                        <option value="japanese">Japanese</option>
+                        {% for category in ['malay', 'chinese', 'indian', 'thai', 'western', 'japanese'] %}
+                        <option value="{{ category }}" {% if recipe.category == category %}selected{% endif %}>{{ category.capitalize() }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 
-                <!--Add Recipe Prep and Serving Time -->
+                <!--Add Recipe Prep, Cook and Serving Time -->
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label for="prepTime" class="form-label fw-semibold">Prep Time</label>
-                        <input type="text" class="form-control rounded-3" id="prepTime" name="prep_time" placeholder="e.g., 20 minutes" required>
+                        <input type="text" class="form-control rounded-3" id="prepTime" name="prep_time" value="{{ recipe.prep_time }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="cookTime" class="form-label fw-semibold">Cook Time</label>
+                        <input type="text" class="form-control" id="cookTime" name="cook_time" value="{{ recipe.cook_time }}">
                     </div>
                     <div class="col-md-6">
                         <label for="servings" class="form-label fw-semibold">Servings</label>
-                        <input type="number" class="form-control rounded-3" id="servings" name="servings" placeholder="e.g., 4" required>
+                        <input type="number" class="form-control rounded-3" id="servings" name="servings" value="{{ recipe.servings }}">
                     </div>
                 </div>
 
@@ -55,12 +62,14 @@
                 <div class="mb-4">
                     <label class="form-label fw-semibold">Ingredients</label>
                     <div id="ingredient-list">
+                        {% for ingredient in recipe.ingredients %}
                         <div class="input-group mb-2">
-                            <input type="text" class="form-control rounded-start" name="ingredients[]" placeholder="e.g., 1 cup flour">
+                            <input type="text" class="form-control rounded-start" name="ingredients[]" value="{{ ingredient }}">
                             <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeIngredient(this)">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
+                        {% endfor %}
                     </div>
                     <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" onclick="addIngredient()">+ Add Ingredient</button>
                 </div>
@@ -69,21 +78,36 @@
                 <div class="mb-4">
                     <label class="form-label fw-semibold">Instructions</label>
                     <div id="step-list">
-                        <!-- Step Text -->
-                        <div class="input-group mb-2">
-                            <input type="text" class="form-control rounded-start" name="steps[]" placeholder="e.g., Preheat oven to 180°C">
-                            <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStep(this)">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
+                        {% for step in recipe.instructions %}
+                            <!-- Step Text -->
+                            <div class="mb-3">
+                                <div class="input-group mb-2">
+                                    <textarea class="form-control rounded-start" name="steps[]">{{ step.text }}</textarea>
+                                    <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStep(this)">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>
 
-                        <!-- Step Image -->
-                        <div class="input-group mb-2">
-                            <input type="file" class="form-control rounded-start" name="steps[]">
-                            <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStepImage(this)">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </div>
+                            <!-- Step Image -->
+                            <div class="mb-3">
+                                {% if step.image %}
+                                <div class="mb-2 current-image">
+                                    <img src="{{ url_for('static', filename=step.image) }}" class="img-thumbnail" style="max-height: 150px;">
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removeCurrentImage(this)">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="input-group mb-2">
+                                    <input type="file" class="form-control rounded-start" name="steps_images[]">
+                                    <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStepImage(this)">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
                     <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" onclick="addStep()">+ Add Step</button>
                 </div>
@@ -91,7 +115,7 @@
                 <!-- Submit Button -->
                 <div class="text-center mt-4">
                     <button type="submit" class="btn btn-primary btn-lg px-5">Update Changes</button>
-                    <button type="submit" class="btn btn-danger btn-lg px-5">Delete This Recipe</button>
+                    <a href="{{ url_for('deleterecipe', recipe_title=recipe.title) }}" class="btn btn-danger btn-lg px-5" onclick="return confirm('Are you sure you want to delete this recipe?')">Delete Recipe</a>
                 </div>
             </form>
         </div>

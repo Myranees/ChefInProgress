@@ -52,3 +52,8 @@ function removeStep(button) {
 function removeStepImage(button) {
     button.closest('.input-group').remove();
 }
+
+// Remove current image preview
+function removeCurrentImage(button) {
+    button.closest('.current-image').remove();
+}

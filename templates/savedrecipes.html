@@ -1,96 +1,50 @@
 {% extends "layout.html" %}
 {% block content %}
 <section class="container p-3 text-left center">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0 text-decoration-underline">Saved Recipes</h3>
-
-        <!-- Search Bar -->
-        <form class="d-flex">
-            <input class="form-control me-2" type="search" placeholder="Search recipes...">
-            <button class="btn btn-outline-secondary" type="submit">Search</button>
-        </form>
+    <div class="row text-center mb-4 mt-4">
+        <h2 class="fw-bold text-center">Saved Recipes</h2>
     </div>
-    <div class="row gx-5 text-center">
+
+    <div class="row gx-4 gy-4 text-center">
         {% for recipe in recipes %}
-        <div class="col-lg-3 col-md-12">
-            <div class="card shadow-3 rounded-5 h-100" style="width: 20rem;">
-                <!-- Wrap image with link to detail -->
-                <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}">
-                    <img src="{{ url_for('static', filename=recipe.image) }}" class="card-img-top" style="height: 250px; object-fit: cover;" alt="Recipe Image">
-                </a>
-
-                <div class="card-body d-flex flex-column justify-content-between">
-                    <!-- Title and Creator -->
-                    <div class="text-center mb-3">
-                        <h5 class="card-title mb-1">
-                            <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}" class="text-dark text-decoration-none">{{ recipe.title }}</a>
-                        </h5>
-                        <p class="text-muted mb-2" style="font-size: 0.9rem;">by <strong>{{ recipe.prepared_by }}</strong></p>
-                    </div>
-
-                    <!-- Time & Serving Info -->
-                    <div class="text-center mb-2">
-                        <p>
-                            <i class="fas fa-clock me-2 text-secondary"></i>{{ recipe.prep_time }} | 
-                            <i class="fas fa-users me-2 text-secondary"></i>{{ recipe.servings }} persons
-                        </p>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="d-flex justify-content-between align-items-center px-2">
-                        <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}" class="btn btn-primary flex-grow-1 me-2">Make This</a>
-
-                        <!-- Toggle Save Icon -->
-                        {% set is_favorited = recipe.title in user_favorites %}
-                        <a href="{{ url_for('remove_from_favorites' if is_favorited else 'add_to_favorites', recipe_title=recipe.title) }}"
-                        class="btn btn-outline-warning" title="{{ 'Remove from Favorites' if is_favorited else 'Add to Favorites' }}">
-                            {% if is_favorited %}
-                                <i class="fas fa-bookmark"></i>  {# Solid bookmark if saved #}
-                            {% else %}
-                                <i class="far fa-bookmark"></i>  {# Outline bookmark if unsaved #}
-                            {% endif %}
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
+            {% include "recipe_card.html" %}
         {% endfor %}
     </div>
 
 
     <!-- Pagination -->
     <div class="text-center mt-5">
-    <p>Showing {{ (page - 1) * per_page + 1 }}–{{ (page - 1) * per_page + recipes|length }} of {{ total }} recipes</p>
-</div>
+        <p>Showing {{ (page - 1) * per_page + 1 }}–{{ (page - 1) * per_page + recipes|length }} of {{ total }} recipes</p>
+    </div>
 
-<div class="d-flex justify-content-center">
-    <nav aria-label="Recipe page navigation">
-        <ul class="pagination pagination-lg">
+    <div class="d-flex justify-content-center">
+        <nav aria-label="Recipe page navigation">
+            <ul class="pagination pagination-lg">
 
-            <!-- Previous -->
-            <li class="page-item {% if page == 1 %}disabled{% endif %}">
-                <a class="page-link" href="{{ url_for('savedrecipes', page=page-1) }}" tabindex="-1" aria-disabled="{{ page == 1 }}">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
-
-            <!-- Page Numbers -->
-            {% for p in range(1, total_pages + 1) %}
-                <li class="page-item {% if p == page %}active{% endif %}">
-                    <a class="page-link" href="{{ url_for('savedrecipes', page=p) }}">{{ p }}</a>
+                <!-- Previous -->
+                <li class="page-item {% if page == 1 %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('savedrecipes', page=page-1) }}" tabindex="-1" aria-disabled="{{ page == 1 }}">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
                 </li>
-            {% endfor %}
 
-            <!-- Next -->
-            <li class="page-item {% if page == total_pages %}disabled{% endif %}">
-                <a class="page-link" href="{{ url_for('savedrecipes', page=page+1) }}" aria-disabled="{{ page == total_pages }}">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
+                <!-- Page Numbers -->
+                {% for p in range(1, total_pages + 1) %}
+                    <li class="page-item {% if p == page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('savedrecipes', page=p) }}">{{ p }}</a>
+                    </li>
+                {% endfor %}
 
-        </ul>
-    </nav>
-</div>
+                <!-- Next -->
+                <li class="page-item {% if page == total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('savedrecipes', page=page+1) }}" aria-disabled="{{ page == total_pages }}">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    </div>
 
 </section>
 {% endblock %}

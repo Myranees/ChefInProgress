@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<section class="my-5">
+    <div class="row text-center mb-4 mt-4">
+        <h2 class="fw-bold text-center">AI Recipe Assistant</h2>
+
+    </div>
+
+    <div class="row" style="min-height: 600px;">
+        <!-- LEFT COLUMN -->
+        <div class="col-md-4 d-flex flex-column">
+            <!-- Input Section -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+                <h4 class="text-center mb-3"> What's in your kitchen?</h4>
+                <form method="POST" action="{{ url_for('AIrecipe') }}">
+                    <label for="prompt_text" class="form-label text-center">Enter ingredients, preferences, or a craving:</label>
+                    <textarea class="form-control mb-3" rows="6" id="prompt_text" name="prompt_text" required>{{ selected_prompt or prompt_text}}</textarea>
+                    <button type="submit" class="btn btn-success w-100 rounded-pill mt-auto">
+                        Generate Recipe Idea
+                    </button>
+                </form>
+            </div>
+
+            <!-- History Section -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 h-100 d-flex flex-column">
+                <h4 class="text-center mb-3"> Prompt History</h4>
+                {% if history %}
+                <ul class="list-group list-group-flush overflow-auto h-100" style="max-height: 200px;">
+                    {% for item in history[:4] %}
+                    <li class="list-group-item {% if selected_id and item._id|string == selected_id %}active{% endif %}">
+                        <a href="{{ url_for('AIrecipe', selected_id=item._id|string) }}" class="text-decoration-none {% if selected_id and item._id|string == selected_id %}text-white{% else %}text-dark{% endif %}">
+                            {{ item.prompt_text | e }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted text-center">No recipe prompts submitted yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div class="col-md-8 d-flex flex-column">
+            <!-- Result -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 h-100 d-flex flex-column">
+                <h4 class="text-center mb-3">Suggested Recipe</h4>
+                <div class="bg-light p-3 rounded-4 overflow-auto h-100" style="max-height: 570px">
+                    {% if output %}
+                        <p class="text-start">{{ output | format_output }}</p>
+                    {% else %}
+                        <p class="text-muted text-center mt-4">Your recipe will appear here.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

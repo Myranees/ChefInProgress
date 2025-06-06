@@ -19,8 +19,6 @@
     <!-- MDB JS -->
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.0.0/mdb.min.js"></script>
 
-    <!-- Custom styles -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 
     <style>
         body {
@@ -43,15 +41,15 @@
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg navbar-light bg-white">
             <div class="container">
-            <a class="navbar-brand nav-link" href="#">
-                <img
-                src="{{ url_for('static', filename='img/icon_chef.png') }}"
-                height="20"
-                alt="MDB Logo"
-                loading="lazy"
-                />
-                <strong>ChefInProgress</strong>
-            </a>
+                <a class="navbar-brand nav-link" href="{{ url_for('index') }}">
+                    <img
+                    src="{{ url_for('static', filename='img/icon_chef.png') }}"
+                    height="20"
+                    alt="MDB Logo"
+                    loading="lazy"
+                    />
+                    <strong>ChefInProgress</strong>
+                </a>
                 <button class="navbar-toggler" type="button" data-mdb-toggle="collapse"
                     data-mdb-target="#navbarExample01" aria-controls="navbarExample01" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -72,27 +70,25 @@
                             <a class="nav-link" href="{{ url_for('myrecipes') }}">My Recipes</a>
                         </li>
                         <li class="nav-item pe-2">
-                            <a class="nav-link" href="{{ url_for('google_text_generation') }}">Recipe AI</a>
+                            <a class="nav-link" href="{{ url_for('AIrecipe') }}">Recipe AI</a>
                         </li>
                     </ul>
 
                     <!-- right menu -->
                     <ul class="navbar-nav d-flex flex-row">
                         {% if user %}
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="{{ url_for('static', filename='uploads/' + (user.profile_pic or 'default.jpg')) }}"
-                                        alt="Profile"
+                            <li class="nav-item me-3 me-lg-0">
+                                <a class="nav-link" href="{{ url_for('profile') }}">
+                                    <img src="{{ url_for('static', filename='uploads/' + (user.profile_pic or 'default.png')) }}"
+                                        alt="{{user.username}}"
                                         class="rounded-circle"
-                                        width="45"
-                                        height="45">
+                                        width="39"
+                                        height="39"
+                                        title="Go to Profile"
+                                        >
                                 </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                                    <li><a class="dropdown-item disabled" href="#">{{ session.get('username') }}</a></li>
-                                    <li><a class="dropdown-item" href="{{ url_for('profile') }}">Profile</a></li>
-                                    <li><a class="dropdown-item text-danger" href="{{ url_for('logout') }}">Logout</a></li>
-                                </ul>
                             </li>
+
                         {% else %}
                             <li class="nav-item me-3 me-lg-0">
                                 <a class="nav-link" href="{{ url_for('login') }}">Login</a>
@@ -106,6 +102,7 @@
 
             </div>
         </nav>
+        {% include "flashmessage.html" %}
 
         {% block jumbotron %}
         {% endblock %}
@@ -115,10 +112,9 @@
 
     <!-- container -->
     <div class="container flex-grow-1">
-    {% include "flashmessage.html" %}
 
-    {% block content %}
-    {% endblock %}
+        {% block content %}
+        {% endblock %}
 
     </div>
 
@@ -132,7 +128,7 @@
 
     <!-- JS files -->
     <script type="text/javascript" src="{{ url_for('static', filename='js/mdb.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/recipe-form.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/custom.js') }}"></script>
     <script src="{{ url_for('static', filename='js/show-toasts.js') }}"></script>
 
 

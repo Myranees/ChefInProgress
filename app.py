@@ -62,6 +62,8 @@ def convert_to_minutes(time_str):
 def index():
     recipes = list(recipe_col.find()) 
     cuisine = request.args.get('cuisine')
+    user = user_col.find_one({'email': session['user_email']})
+    favorite_titles = user.get('favorites', [])
     filtered_recipes = []
     if cuisine:
         filtered_recipes = list(recipe_col.find({"category": {"$regex": f"^{cuisine}$", "$options": "i"}}))
@@ -69,7 +71,7 @@ def index():
             prep_time = convert_to_minutes(recipe.get("prep_time", "0"))
             cook_time = convert_to_minutes(recipe.get("cook_time", "0"))
             recipe['total_time'] = prep_time + cook_time
-    return render_template('home.html', recipes=recipes, filtered_recipes=filtered_recipes, selected_cuisine=cuisine)
+    return render_template('home.html', recipes=recipes, filtered_recipes=filtered_recipes, selected_cuisine=cuisine, user_favorites=favorite_titles, user=user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -194,33 +196,29 @@ def recipedetails(recipe_title):
         return render_template('recipedetails.html', data=recipe)
     abort(404)
 
-@app.route('/add_to_favorites/<recipe_title>')
-def add_to_favorites(recipe_title):
+@app.route('/toggle_favorite/<recipe_title>')
+def toggle_favorite(recipe_title):
     if 'user_email' not in session:
-        flash("Please login to save favorites.")
+        flash("Please login to manage favorites.")
         return redirect(url_for('login'))
 
     user = user_col.find_one({'email': session['user_email']})
     recipe = recipe_col.find_one({'title': recipe_title})
 
     if user and recipe:
-        if recipe_title not in user.get('favorites', []):
+        favorites = user.get('favorites', [])
+        if recipe_title in favorites:
+            user_col.update_one(
+                {'email': session['user_email']},
+                {'$pull': {'favorites': recipe_title}}
+            )
+            flash(f"{recipe_title} removed from your favorites.")
+        else:
             user_col.update_one(
                 {'email': session['user_email']},
                 {'$push': {'favorites': recipe_title}}
             )
             flash(f"{recipe_title} added to your favorites!")
-        else:
-            flash(f"{recipe_title} is already in your favorites.")
-    return redirect(url_for('savedrecipes'))
-
-@app.route('/remove_from_favorites/<recipe_title>')
-def remove_from_favorites(recipe_title):
-    if 'user_email' not in session:
-        flash("You must be logged in to remove favorites.")
-        return redirect(url_for('login'))
-
-    user_col.update_one({'email': session['user_email']}, {'$pull': {'favorites': recipe_title}})
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/addrecipe', methods=['GET', 'POST'])
@@ -421,7 +419,7 @@ def profile():
     user = user_col.find_one({'email': session['user_email']})
 
     if request.method == 'POST':
-        name = request.form.get('name', '').strip()
+        name = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
         new_password = request.form.get('password', '').strip()
         old_password = request.form.get('old_password', '').strip()
@@ -472,69 +470,63 @@ def inject_user():
         user = user_col.find_one({'email': session['user_email']})
     return dict(user=user)
 
-# 1. Google AI: Text generation route
-@app.route('/google_text_generation', methods=['GET', 'POST'])
-def google_text_generation():
+@app.route('/AIrecipe', methods=['GET', 'POST'])
+def AIrecipe():
     # Check if user is logged in
     if 'user_email' not in session:
         flash("Please log in to access your profile.")
         return redirect(url_for('login'))
     
-    current_user_id = session['username']  # Assuming you store user ID in session
+    current_user_id = session['username']
+    prompt_text = ""
+    output = ""
+    selected_id = request.args.get('selected_id')
+    history = list(googleai_text_col.find({"user_id": current_user_id}).sort("_id", -1))
     
-    # handling a form is submitted via POST aka login data
     if request.method == "POST":
-        # receive text data from POST form
+        # receive text data from  form
         prompt_text = request.form['prompt_text'].strip()
 
-        # get response text
-        content = ""
         try:
-            # call the AI_APIs.py function to generate text using Google Gemini AI
-            content = AI_APIs.generate_text_gemini(prompt_text)
-            # save into database
-            # prepare the key values to be stored
-            new_data = { "prompt_text": prompt_text, "response": content, "created_date": datetime.now(), "user_id": current_user_id}
+            
+            output = AI_APIs.generate_text_gemini(prompt_text)   # call the AI_APIs.py function to generate text using Google Gemini AI
+
+            new_data = {
+                "prompt_text": prompt_text, 
+                "response": output, 
+                "created_date": datetime.now(), 
+                "user_id": current_user_id
+                }
+            
             googleai_text_col.insert_one(new_data)
             flash("The output/response has been successfully generated. Please check the result below.")
+            history.insert(0, new_data)
             
         except:
             flash("error calling the model")
-
-        # get the data from database
-        text_data = googleai_text_col.find({"user_id": current_user_id}).sort("_id", -1)
-        text_data_list = list(text_data)
+            
+        return render_template("AIrecipe.html", history=history, output=output, prompt_text=prompt_text, selected_id=None)
+       
+    # Handle view detail of a specific prompt
+    if selected_id:
+        try:
+            _id_converted = ObjectId(selected_id)
+            selected = googleai_text_col.find_one({"_id": _id_converted, "user_id": current_user_id }) # get one project data matched with _id
+            print("ID SELECTED")
+            if selected:
+                prompt_text = selected.get("prompt_text", "")
+                output = selected.get("response", "")
+        except:
+            print("ID is not found/invalid")
+            
         
-        return render_template("google_text_generation.html", output=content, prompt_text=prompt_text, data=text_data_list)
-    
-    # else (not POST aka GET) then
-    # show the form and get the latest data from database
-    text_data = googleai_text_col.find({"user_id": current_user_id}).sort("_id", -1)
-    text_data_list = list(text_data)
-
-    return render_template("google_text_generation.html", data=text_data_list)
-
-# Get Google AI generated text detail
-@app.route('/google_text_generation/<id>')
-def google_text_generation_detail(id):
-    if 'user_email' not in session:
-        flash("Please log in to access your profile.")
-        return redirect(url_for('login'))
-    
-    current_user_id = session['username']
-    data = ""
-    try:
-        _id_converted = ObjectId(id)
-        search_filter = {"_id": _id_converted, "user_id": current_user_id } # _id is key and _id_converted is the converted _id
-        data = googleai_text_col.find_one(search_filter) # get one project data matched with _id
-        
-        if not data:
-            flash("Record not found or you don't have permission to view it")
-            return redirect(url_for('google_text_generation'))
-    except:
-        print("ID is not found/invalid")
-    
-    return render_template("google_text_generation_detail.html", data=data)
+    return render_template(
+        "AIrecipe.html",
+        history=history,
+        output=output,
+        prompt_text=prompt_text,
+        selected_id=selected_id)
+                        
 
 @app.route('/logout')
 def logout():

@@ -2,7 +2,7 @@
 
 <!-- jumbotron -->
 {% block jumbotron %}
-<div class="p-5 text-center bg-image" style="background-image: url('{{ url_for("static", filename="img/home_jumbotron.jpg") }}'); height: 400px;">
+<div class="p-5 text-center bg-image" style="background-image: url('{{ url_for("static", filename="img/home_jumbotron.jpg") }}'); height: 300px;">
   <div class="mask" style="background-color: rgba(0, 0, 0, 0.6); height: 100%;">
     <div class="d-flex justify-content-center align-items-center h-100">
       <div class="text-white w-100">
@@ -24,44 +24,12 @@
 
 <!-- Popular Recipes -->
 <section class="container p-3 text-left center">
-  <div class="row text-center mb-4">
+  <div class="row text-center mb-4 mt-4">
     <h2 class="fw-bold text-center">Popular Recipes</h2>
   </div>
   <div class="row gx-4 gy-4 text-center">
     {% for recipe in recipes[:8] %}
-    <div class="col-lg-3 col-md-6 mb-4">
-      <div class="card shadow-3 rounded-5 h-100" style="width: 19rem;">
-
-        <!--Card Image-->
-        <img src="{{ url_for('static', filename=recipe.image) }}" class="card-img-top" style="height: 250px; object-fit: cover;" alt="Recipe Image">
-
-        <div class="card-body d-flex flex-column justify-content-between">
-          <!-- Title and Creator -->
-          <div class="text-center mb-3">
-            <h5 class="card-title mb-1">
-              <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}" class="text-dark text-decoration-none">{{ recipe.title }}</a>
-            </h5>
-            <p class="text-muted mb-2" style="font-size: 0.9rem;">by <strong>{{ recipe.prepared_by }}</strong></p>
-          </div>
-
-          <!-- Time & Serving Info -->
-          <div class="text-center mb-2">
-            <p>
-              <i class="fas fa-clock me-2 text-secondary"></i>{{ recipe.prep_time }} | 
-              <i class="fas fa-users me-2 text-secondary"></i>{{ recipe.servings }} persons
-            </p>
-          </div>
-
-          <!-- Action Buttons -->
-          <div class="d-flex justify-content-between align-items-center px-2">
-              <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}" class="btn btn-primary flex-grow-1 me-2">Make This</a>
-              <a href="{{ url_for('add_to_favorites', recipe_title=recipe.title) }}" class="btn btn-outline-warning" title="Add to Favorites">
-                <i class="fas fa-bookmark"></i>
-              </a>
-          </div>
-        </div>
-      </div>
-    </div>
+      {% include "recipe_card.html"%}
     {% endfor %}
   </div>
 </section>
@@ -69,8 +37,8 @@
 <!-- Search for Recipes -->
 <section class="container p-3 text-left center">
   <!-- Search by Cuisine -->
-  <div class= "row text-center my-4">
-    <h2 class="fw-bold text-center"> Search For a Recipes </h2>
+  <div class= "row text-center my-4 mt-4">
+    <h2 class="fw-bold text-center"> Search For A Recipe </h2>
   </div>  
 
   <!-- Search Form Section -->
@@ -121,49 +89,15 @@
 
   <!-- Filtered Recipes -->
   {% if selected_cuisine %}
-  <div class="row text-center my-4">
       {% if filtered_recipes %}
       <div class="row gx-4 gy-4 text-center">
         {% for recipe in filtered_recipes %}
-        <div class="col-lg-3 col-md-6">
-          <div class="card shadow-3 rounded-5 h-100" style="width: 19rem;">
-
-            <!--Card Image-->
-            <img src="{{ url_for('static', filename=recipe.image) }}" class="card-img-top" style="height: 250px; object-fit: cover;" alt="Recipe Image">
-            
-            
-            <div class="card-body d-flex flex-column justify-content-between">
-              <!-- Title and Creator -->
-              <div class="text-center mb-3">
-                <h5 class="card-title mb-1">{{ recipe.title }}</h5>
-                <p class="text-muted mb-2" style="font-size: 0.9rem;">by <strong>{{ recipe.prepared_by }}</strong></p>
-              </div>
-
-              <!-- Time & Serving Info -->
-              <div class="text-center mb-2">
-                <p>
-                  <i class="fas fa-clock me-2 text-secondary"></i> {{ recipe.total_time }} mins | 
-                  <i class="fas fa-users me-2 text-secondary"></i> {{ recipe.servings }} persons
-                </p>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="d-flex justify-content-between align-items-center px-2">
-                <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}" class="btn btn-primary flex-grow-1 me-2">Make This</a>
-                <a href="{{ url_for('add_to_favorites', recipe_title=recipe.title) }}" class="btn btn-outline-warning" title="Add to Favorites">
-                  <i class="fas fa-bookmark"></i>
-                </a>
-              </div>
-
-            </div>
-          </div>
-        </div>
+          {% include "recipe_card.html" %}
         {% endfor %}
       </div>
       {% else %}
         <p>No recipes found for this cuisine.</p>
       {% endif %}
-  </div>
   {% endif %}
 
 

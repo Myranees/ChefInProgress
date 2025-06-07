@@ -97,7 +97,11 @@
                                     <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removeCurrentImage(this)">
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
+                                    <input type="hidden" name="delete_step_images[]" value="0">
                                 </div>
+                                </div>
+                                {% else %}
+                                <input type="hidden" name="delete_step_images[]" value="0">
                                 {% endif %}
                                 
                                 <div class="input-group mb-2">

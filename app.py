@@ -312,6 +312,7 @@ def editrecipe(recipe_title):
             ingredients = [s.strip() for s in request.form.getlist('ingredients[]') if s.strip()]
             step_texts = [s.strip() for s in request.form.getlist('steps[]') if s.strip()]
             step_images = request.files.getlist('steps_images[]')
+            delete_flags = request.form.getlist('delete_step_images[]')
 
             # Basic validation
             if not title or not category or not description or not ingredients or not step_texts:
@@ -342,16 +343,25 @@ def editrecipe(recipe_title):
             for i, text in enumerate(step_texts):
                 img_path = None
                 
-                # Check if we have an existing image for this step that we might keep
-                if i < len(existing_steps) and existing_steps[i].get('image'):
-                    img_path = existing_steps[i]['image']
+                # Track if this step originally had an image
+                if i < len(existing_steps):
+                    img_path = existing_steps[i].get('image')
+
+                # Check if the user marked this step image for deletion
+                delete_flag = delete_flags[i] == '1' if i < len(delete_flags) else False
+                if delete_flag and img_path:
+                    try:
+                        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], img_path.replace('uploads/', '')))
+                    except:
+                        pass
+                    img_path = None  # Clear image since it's marked deleted
                 
                 # Check if a new image was uploaded for this step
                 if i < len(step_images):
                     img_file = step_images[i]
                     if img_file and allowed_file(img_file.filename):
                         # Delete old step image if exists
-                        if img_path and os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], img_path.replace('uploads/', ''))):
+                        if img_path:
                             try:
                                 os.remove(os.path.join(app.config['UPLOAD_FOLDER'], img_path.replace('uploads/', '')))
                             except:
@@ -417,6 +427,7 @@ def profile():
         return redirect(url_for('login'))
 
     user = user_col.find_one({'email': session['user_email']})
+    created_count = recipe_col.count_documents({'prepared_by': user['username']})
 
     if request.method == 'POST':
         name = request.form.get('username', '').strip()
@@ -425,6 +436,16 @@ def profile():
         old_password = request.form.get('old_password', '').strip()
         profile_pic = request.files.get('profile_pic')
 
+        # Check if username already exists (excluding current user)
+        if name and name != user['username']:
+            existing_user = user_col.find_one({
+                'username': name,
+                '_id': {'$ne': user['_id']}  # Exclude current user from check
+            })
+            if existing_user:
+                flash("Username already taken. Please choose another.", "danger")
+                return redirect(url_for('profile'))
+            
         update_fields = {
             'username': name,
             'email': email
@@ -452,6 +473,12 @@ def profile():
             profile_pic.save(filepath)
             update_fields['profile_pic'] = unique_name
          
+         # If username is being changed, update recipes
+        old_username = user['username']
+        if name and name != old_username:
+            # Update recipes where the user is the author
+            recipe_col.update_many({'prepared_by': old_username}, {'$set': {'prepared_by': name}})
+    
         # Update user in DB
         user_col.update_one({'email': session['user_email']}, {'$set': update_fields})
 
@@ -461,7 +488,7 @@ def profile():
         flash("Profile updated successfully!")
         return redirect(url_for('profile'))
 
-    return render_template('profile.html', user=user)
+    return render_template('profile.html', user=user, created_count=created_count)
 
 @app.context_processor
 def inject_user():
@@ -469,6 +496,8 @@ def inject_user():
     if 'user_email' in session:
         user = user_col.find_one({'email': session['user_email']})
     return dict(user=user)
+def inject_recipe_col():
+    return dict(recipe_col=recipe_col)
 
 @app.route('/AIrecipe', methods=['GET', 'POST'])
 def AIrecipe():
@@ -477,11 +506,11 @@ def AIrecipe():
         flash("Please log in to access your profile.")
         return redirect(url_for('login'))
     
-    current_user_id = session['username']
+    current_user_email = session['user_email']
     prompt_text = ""
     output = ""
     selected_id = request.args.get('selected_id')
-    history = list(googleai_text_col.find({"user_id": current_user_id}).sort("_id", -1))
+    history = list(googleai_text_col.find({"user_id": current_user_email}).sort("_id", -1))
     
     if request.method == "POST":
         # receive text data from  form
@@ -495,7 +524,7 @@ def AIrecipe():
                 "prompt_text": prompt_text, 
                 "response": output, 
                 "created_date": datetime.now(), 
-                "user_id": current_user_id
+                "user_id": current_user_email
                 }
             
             googleai_text_col.insert_one(new_data)
@@ -511,7 +540,7 @@ def AIrecipe():
     if selected_id:
         try:
             _id_converted = ObjectId(selected_id)
-            selected = googleai_text_col.find_one({"_id": _id_converted, "user_id": current_user_id }) # get one project data matched with _id
+            selected = googleai_text_col.find_one({"_id": _id_converted, "user_id": current_user_email }) # get one project data matched with _id
             print("ID SELECTED")
             if selected:
                 prompt_text = selected.get("prompt_text", "")

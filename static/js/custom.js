@@ -53,7 +53,13 @@ function removeStepImage(button) {
     button.closest('.input-group').remove();
 }
 
-// Remove current image preview
+// Remove current image preview and set hidden delete flag
 function removeCurrentImage(button) {
-    button.closest('.current-image').remove();
+    const container = button.closest('.current-image');
+    const hiddenInput = container.querySelector("input[type='hidden']");
+    const image = container.querySelector("img");
+
+    if (image) image.style.display = "none";  // hide the image
+    if (button) button.style.display = "none"; // hide the ❌ button
+    if (hiddenInput) hiddenInput.value = "1";  // mark for deletion
 }

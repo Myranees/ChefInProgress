@@ -145,6 +145,17 @@ def register():
     # if GET request, show registration form
     return render_template('register.html')
 
+@app.route('/searchresults')
+def searchresults():
+    query = request.args.get('query', '')
+    if query:
+        results = recipe_col.find({
+            "ingredients": {"$regex": query, "$options": "i"}
+        })
+        return render_template('searchresults.html', query=query, recipes=results)
+    else:
+        return render_template('searchresults.html', query=query, results=[])
+
 @app.route('/savedrecipes')
 def savedrecipes():
     if 'user_email' not in session:

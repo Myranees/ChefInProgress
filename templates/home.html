@@ -13,29 +13,6 @@
           Chef & Friends helps you manage your fridge and discover new meals,
           all in one friendly and easy-to-use web app.
         </p>
-<<<<<<< HEAD
-=======
-<form action="{{ url_for('searchresults') }}" method="GET">
-  <div class="input-group rounded-pill shadow-sm overflow-hidden">
-    <span class="input-group-text bg-white border-end-0 px-4">
-      <i class="fa-solid fa-magnifying-glass text-muted"></i>
-    </span>
-    <input 
-      type="search" 
-      class="form-control border-start-0 border-end-0 px-3 py-3 fs-5" 
-      placeholder="Search for a recipe" 
-      aria-label="Search"
-      name="query"
-    />
-    <button 
-      class="btn btn-primary px-4 rounded-end-pill" 
-      type="submit"
-    >
-      Search
-    </button>
-  </div>
-</form>
->>>>>>> 1f044f9 (search)
       </div>
     </div>
   </div>
@@ -109,19 +86,34 @@
     </form>
   </div>
 
+  <form action="{{ url_for('index') }}" method="GET">
+  <input type="search" name="query" placeholder="Search for Recipes" value="{{ search_query or '' }}">
+  
+  <select class="form-select rounded-pill py-2 px-3 shadow-sm" name="cuisine">
+    <option value="" {% if not selected_cuisine %}selected{% endif %} hidden>Select Cuisine</option>
+    <option value="Malay" {% if selected_cuisine == 'Malay' %}selected{% endif %}>Malay</option>
+    <option value="Chinese" {% if selected_cuisine == 'Chinese' %}selected{% endif %}>Chinese</option>
+    <option value="Indian" {% if selected_cuisine == 'Indian' %}selected{% endif %}>Indian</option>
+    <option value="Thai" {% if selected_cuisine == 'Thai' %}selected{% endif %}>Thai</option>
+    <option value="Western" {% if selected_cuisine == 'Western' %}selected{% endif %}>Western</option>
+    <option value="Japanese" {% if selected_cuisine == 'Japanese' %}selected{% endif %}>Japanese</option>
+    <option value="Korean" {% if selected_cuisine == 'Korean' %}selected{% endif %}>Korean</option>
+    <option value="Indonesian" {% if selected_cuisine == 'Indonesian' %}selected{% endif %}>Indonesian</option>
+  </select>
+
+  <button type="submit">Search</button>
+</form>
 
   <!-- Filtered Recipes -->
-  {% if selected_cuisine %}
-      {% if filtered_recipes %}
-      <div class="row gx-4 gy-4 text-center">
-        {% for recipe in filtered_recipes %}
-          {% include "recipe_card.html" %}
-        {% endfor %}
-      </div>
-      {% else %}
-        <p>No recipes found for this cuisine.</p>
-      {% endif %}
-  {% endif %}
+{% if filtered_recipes %}
+  <div class="row gx-4 gy-4 text-center">
+    {% for recipe in filtered_recipes %}
+      {% include "recipe_card.html" %}
+    {% endfor %}
+  </div>
+{% elif selected_cuisine or search_query %}
+  <p>No recipes found matching your search.</p>
+{% endif %}
 
 
 </section>

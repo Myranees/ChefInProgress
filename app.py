@@ -62,16 +62,34 @@ def convert_to_minutes(time_str):
 def index():
     recipes = list(recipe_col.find()) 
     cuisine = request.args.get('cuisine')
+    query = request.args.get('query')
     user = user_col.find_one({'email': session['user_email']})
     favorite_titles = user.get('favorites', [])
     filtered_recipes = []
-    if cuisine:
-        filtered_recipes = list(recipe_col.find({"category": {"$regex": f"^{cuisine}$", "$options": "i"}}))
+
+    if cuisine or query:
+        filter_query = {}
+
+        if cuisine:
+            filter_query["category"] = {"$regex": f"^{cuisine}$", "$options": "i"}
+
+        if query:
+            filter_query["title"] = {"$regex": query, "$options": "i"}
+
+        filtered_recipes = list(recipe_col.find(filter_query))
+
         for recipe in filtered_recipes:
             prep_time = convert_to_minutes(recipe.get("prep_time", "0"))
             cook_time = convert_to_minutes(recipe.get("cook_time", "0"))
             recipe['total_time'] = prep_time + cook_time
-    return render_template('home.html', recipes=recipes, filtered_recipes=filtered_recipes, selected_cuisine=cuisine, user_favorites=favorite_titles, user=user)
+
+    return render_template('home.html',
+                       recipes=recipes,
+                       filtered_recipes=filtered_recipes,
+                       selected_cuisine=cuisine,
+                       search_query=query,
+                       user_favorites=favorite_titles,
+                       user=user)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

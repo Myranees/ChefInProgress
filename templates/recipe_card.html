@@ -33,18 +33,15 @@
                 
                 {% if recipe.prepared_by == user.username %}
                     <!-- Edit Recipe Button -->
-                    <a href="{{ url_for('editrecipe', recipe_id=recipe._id) }}" class="btn btn-outline-dark" title="Edit Recipe">
+                    <a href="{{ url_for('editrecipe', recipe_id=recipe._id) }}" class="btn btn-dark" title="Edit Recipe">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </a>
                 {% else %}
-                    <!--Toggle Save Button-->
+                    <!-- Toggle Save Button -->
                     <a href="{{ url_for('toggle_favorite', recipe_id=recipe._id) }}" class="btn btn-outline-warning"
-                    title="{{ 'Remove from Favorites' if recipe.title in user_favorites else 'Add to Favorites' }}">
-                        {% if recipe.title in user_favorites %}
-                            <i class="fas fa-bookmark"></i>  {# Solid bookmark if saved #}
-                        {% else %}
-                            <i class="far fa-bookmark"></i>  {# Outline bookmark if unsaved #}
-                        {% endif %}
+                       class="btn {% if recipe.title in user_favorites %}btn-warning{% else %}btn-outline-warning{% endif %}"
+                       title="{{ 'Remove from Favorites' if recipe.title in user_favorites else 'Add to Favorites' }}">
+                       <i class="fas fa-bookmark"></i>
                     </a>
                 {% endif %}
 

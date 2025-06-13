@@ -58,6 +58,34 @@ def convert_to_minutes(time_str):
     except:
         return 0
 
+# validate strong password
+def is_strong_password(password):
+    if len(password) < 8:
+        return "Password must be at least 8 characters long."
+    if not re.search(r'[A-Z]', password):
+        return "Password must include at least one uppercase letter."
+    if not re.search(r'[a-z]', password):
+        return "Password must include at least one lowercase letter."
+    if not re.search(r'[0-9]', password):
+        return "Password must include at least one digit."
+    if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        return "Password must include at least one special character."
+    return ""  # Empty string means the password is strong
+
+# check if email already exists
+def email_exists(email):
+        existing_user = user_col.find_one({"email": email})
+        if existing_user:
+            return True
+        return False
+    
+# check if username already exists
+def username_exists(username):
+    existing_user = user_col.find_one({"username": username})
+    if existing_user:
+        return True
+    return False
+
 @app.route('/')
 def index():
     # Initialize variables
@@ -130,46 +158,65 @@ def login():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    
+    error_msg = {}
+    data = {
+        'username': '',
+        'email': '',
+        'password': '',
+        'confirm_password': ''
+    }
+    
     # if POST request, user starts registration
     if request.method == "POST":
         # collect form data
-        username = request.form.get('username', '').strip()
-        email = request.form.get('email', '').strip()
-        password = request.form.get('password', '').strip()
-        confirm_password = request.form.get('confirm_password', '').strip()
-
+        data['username'] = request.form.get('username', '').strip()
+        data['email'] = request.form.get('email', '').strip()
+        data['password'] = request.form.get('password', '').strip()
+        data['confirm_password'] = request.form.get('confirm_password', '').strip()
+        
+        username = data['username']
+        email = data['email']
+        password = data['password']
+        confirm_password = data['confirm_password']
+        
         # basic validation
-        if not username or not email or not password or not confirm_password:
-            flash("Please fill in all fields.")
-            return redirect(url_for('register'))
-
+        if not username:
+            error_msg['username'] = "Username is required."
+        elif username_exists(username):
+            error_msg['username'] = "Username already exists. Please choose another."
+        if not email:
+            error_msg['email'] = "Email is required."
+        elif email_exists(email):
+            error_msg['email'] = "An account with this email already exists."
+        if not password:
+            error_msg['password'] = "Password is required."
+        else:
+            password_error = is_strong_password(password)
+            if password_error:
+                error_msg['password'] = password_error
         if password != confirm_password:
-            flash("Passwords do not match.")
-            return redirect(url_for('register'))
+            error_msg['confirm_password'] = "Passwords do not match."
+            
+        if not error_msg:
+            # hash password
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+            
+            # save new user to database
+            user_col.insert_one({   
+                "username": username,
+                "email": email,
+                "password": hashed_password,
+                "created_recipe": [],
+                "favorites": [],
+                "profile_pic": "default_profile.png"
+            })
 
-        # check if email already exists
-        existing_user = user_col.find_one({"email": email})
-        if existing_user:
-            flash("An account with this email already exists.")
-            return redirect(url_for('register'))
-
-        # hash password
-        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
-
-        # save new user to database
-        user_col.insert_one({
-            "username": username,
-            "email": email,
-            "password": hashed_password,
-            "created_recipe": [],
-            "profile_pic": "default_profile.png"
-        })
-
-        flash("Registration successful! Please log in.")
-        return redirect(url_for('login'))
+            flash("Registration successful! Please log in.")
+            return redirect(url_for('login'))
 
     # if GET request, show registration form
-    return render_template('register.html')
+    return render_template('register.html', errors=error_msg, data=data)
 
 @app.route('/searchresults')
 def searchresults():
@@ -547,6 +594,12 @@ def profile():
                 flash("Incorrect current password.", "danger")
                 return redirect(url_for('profile'))
 
+            # Check new password strength
+            password_error = is_strong_password(new_password)
+            if password_error:
+                flash(password_error, "danger")
+                return redirect(url_for('profile'))
+            
             hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
             update_fields['password'] = hashed_password
 

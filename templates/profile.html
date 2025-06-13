@@ -11,7 +11,7 @@
         <div class = "col-md-4 center mt-5">
           <!--Profile Picture-->
           <img 
-            src="{{ url_for('static', filename='uploads/' + (user.profile_pic if user.profile_pic and user.profile_pic != '' else 'default_dish.png')) }}"
+            src="{{ url_for('static', filename='uploads/' + (user.profile_pic)) }}"
             alt="{{ user.username }}"
             class="img-fluid w-100"
             style="max-width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: cover;"

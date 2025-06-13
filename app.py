@@ -216,39 +216,51 @@ def myrecipes():
     
     return render_template('myrecipes.html', uploaded_recipes=uploaded_recipes)
 
-@app.route('/recipe/title/<recipe_title>/by/<prepared_by>')
-def recipedetails(recipe_title, prepared_by):
-    recipe = recipe_col.find_one({'title': recipe_title, 'prepared_by': prepared_by})
-    if recipe:
-        recipe['ingredients'] = recipe['ingredients'].split(';') if isinstance(recipe['ingredients'], str) else recipe['ingredients']
-        recipe['instructions'] = recipe['instructions'].split(';') if isinstance(recipe['instructions'], str) else recipe['instructions']
-        return render_template('recipedetails.html', data=recipe)
+@app.route('/recipe/<recipe_id>')
+def recipedetails(recipe_id):
+    try:
+        recipe = recipe_col.find_one({'_id': ObjectId(recipe_id)})
+        if recipe:
+            recipe['ingredients'] = recipe['ingredients'].split(';') if isinstance(recipe['ingredients'], str) else recipe['ingredients']
+            recipe['instructions'] = recipe['instructions'].split(';') if isinstance(recipe['instructions'], str) else recipe['instructions']
+            return render_template('recipedetails.html', data=recipe)
+    except:
+        pass
     abort(404)
 
 
-@app.route('/toggle_favorite/<recipe_title>')
-def toggle_favorite(recipe_title):
+from bson.objectid import ObjectId
+from flask import abort
+
+@app.route('/toggle_favorite/<recipe_id>')
+def toggle_favorite(recipe_id):
     if 'user_email' not in session:
         flash("Please login to manage favorites.")
         return redirect(url_for('login'))
 
+    try:
+        obj_id = ObjectId(recipe_id)
+    except:
+        abort(400, description="Invalid recipe ID format.")
+
     user = user_col.find_one({'email': session['user_email']})
-    recipe = recipe_col.find_one({'title': recipe_title})
+    recipe = recipe_col.find_one({'_id': obj_id})
 
     if user and recipe:
         favorites = user.get('favorites', [])
-        if recipe_title in favorites:
+        if recipe_id in favorites:
             user_col.update_one(
                 {'email': session['user_email']},
-                {'$pull': {'favorites': recipe_title}}
+                {'$pull': {'favorites': recipe_id}}
             )
-            flash(f"{recipe_title} removed from your favorites.")
+            flash(f"{recipe['title']} removed from your favorites.")
         else:
             user_col.update_one(
                 {'email': session['user_email']},
-                {'$push': {'favorites': recipe_title}}
+                {'$push': {'favorites': recipe_id}}
             )
-            flash(f"{recipe_title} added to your favorites!")
+            flash(f"{recipe['title']} added to your favorites!")
+    
     return redirect(request.referrer or url_for('home'))
 
 @app.route('/addrecipe', methods=['GET', 'POST'])
@@ -318,21 +330,28 @@ def addrecipe():
 
     return render_template('addrecipe.html')
 
-@app.route('/editrecipe/<recipe_title>', methods=['GET', 'POST'])
-def editrecipe(recipe_title):
+from bson.objectid import ObjectId
+
+@app.route('/editrecipe/<recipe_id>', methods=['GET', 'POST'])
+def editrecipe(recipe_id):
     if 'username' not in session:
         flash("Please log in to edit your recipe.")
         return redirect(url_for('login'))
 
-    # Find the recipe (using title and author for security)
-    recipe = recipe_col.find_one({'title': recipe_title, 'prepared_by': session['username']})
+    try:
+        obj_id = ObjectId(recipe_id)
+    except:
+        flash("Invalid recipe ID format.")
+        return redirect(url_for('myrecipes'))
+
+    # Find the recipe using ObjectId and author
+    recipe = recipe_col.find_one({'_id': obj_id, 'prepared_by': session['username']})
     if not recipe:
         flash("Recipe not found or you don't have permission to edit it.")
         return redirect(url_for('myrecipes'))
 
     if request.method == 'POST':
         try:
-            # Extract form fields (same as addrecipe)
             title = request.form.get('title', '').strip()
             category = request.form.get('cuisine', '').strip()
             description = request.form.get('description', '').strip()
@@ -344,67 +363,55 @@ def editrecipe(recipe_title):
             step_images = request.files.getlist('steps_images[]')
             delete_flags = request.form.getlist('delete_step_images[]')
 
-            # Basic validation
             if not title or not category or not description or not ingredients or not step_texts:
                 flash("Please fill in all required fields.")
-                return redirect(url_for('editrecipe', recipe_title=recipe_title))
+                return redirect(url_for('editrecipe', recipe_id=recipe_id))
 
-            # Handle main image update (keep existing if not changed)
             image_file = request.files.get('image')
             image_filename = recipe.get('image')
             if image_file and allowed_file(image_file.filename):
-                # Delete old image if exists
                 if image_filename and os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], image_filename.replace('uploads/', ''))):
                     try:
                         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image_filename.replace('uploads/', '')))
                     except:
                         pass
-                # Save new image
                 filename = secure_filename(image_file.filename)
                 unique_name = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
                 image_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
                 image_file.save(image_path)
                 image_filename = f"uploads/{unique_name}"
 
-            # Handle step instructions with images
             step_data = []
             existing_steps = recipe.get('instructions', [])
-            
+
             for i, text in enumerate(step_texts):
                 img_path = None
-                
-                # Track if this step originally had an image
                 if i < len(existing_steps):
                     img_path = existing_steps[i].get('image')
 
-                # Check if the user marked this step image for deletion
                 delete_flag = delete_flags[i] == '1' if i < len(delete_flags) else False
                 if delete_flag and img_path:
                     try:
                         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], img_path.replace('uploads/', '')))
                     except:
                         pass
-                    img_path = None  # Clear image since it's marked deleted
-                
-                # Check if a new image was uploaded for this step
+                    img_path = None
+
                 if i < len(step_images):
                     img_file = step_images[i]
                     if img_file and allowed_file(img_file.filename):
-                        # Delete old step image if exists
                         if img_path:
                             try:
                                 os.remove(os.path.join(app.config['UPLOAD_FOLDER'], img_path.replace('uploads/', '')))
                             except:
                                 pass
-                        # Save new step image
                         step_filename = secure_filename(img_file.filename)
                         step_unique = f"step_{i}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{step_filename}"
                         img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], step_unique))
                         img_path = f"uploads/{step_unique}"
-                
+
                 step_data.append({"text": text, "image": img_path})
 
-            # Updated recipe document
             updated_recipe = {
                 'title': title,
                 'category': category,
@@ -418,20 +425,15 @@ def editrecipe(recipe_title):
                 'instructions': step_data
             }
 
-            # Update the recipe in database
-            recipe_col.update_one(
-                {'_id': recipe['_id']},
-                {'$set': updated_recipe}
-            )
-            
+            recipe_col.update_one({'_id': recipe['_id']}, {'$set': updated_recipe})
+
             flash("Recipe updated successfully!")
             return redirect(url_for('recipedetails', recipe_title=title))
 
         except Exception as e:
             flash(f"An error occurred while updating: {str(e)}")
-            return redirect(url_for('editrecipe', recipe_title=recipe_title))
+            return redirect(url_for('editrecipe', recipe_id=recipe_id))
 
-    # For GET request, render the edit form with existing recipe data
     return render_template('editrecipe.html', recipe=recipe)
 
 @app.route('/deleterecipe/<recipe_title>')

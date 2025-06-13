@@ -216,14 +216,15 @@ def myrecipes():
     
     return render_template('myrecipes.html', uploaded_recipes=uploaded_recipes)
 
-@app.route('/recipe/title/<recipe_title>')
-def recipedetails(recipe_title):
-    recipe = recipe_col.find_one({'title': recipe_title})
+@app.route('/recipe/title/<recipe_title>/by/<prepared_by>')
+def recipedetails(recipe_title, prepared_by):
+    recipe = recipe_col.find_one({'title': recipe_title, 'prepared_by': prepared_by})
     if recipe:
         recipe['ingredients'] = recipe['ingredients'].split(';') if isinstance(recipe['ingredients'], str) else recipe['ingredients']
         recipe['instructions'] = recipe['instructions'].split(';') if isinstance(recipe['instructions'], str) else recipe['instructions']
         return render_template('recipedetails.html', data=recipe)
     abort(404)
+
 
 @app.route('/toggle_favorite/<recipe_title>')
 def toggle_favorite(recipe_title):

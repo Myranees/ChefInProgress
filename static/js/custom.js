@@ -60,6 +60,19 @@ function removeCurrentImage(button) {
     const image = container.querySelector("img");
 
     if (image) image.style.display = "none";  // hide the image
-    if (button) button.style.display = "none"; // hide the ❌ button
+    if (button) button.style.display = "none"; // hide the X button
     if (hiddenInput) hiddenInput.value = "1";  // mark for deletion
+}
+
+function enablePasswordFields(btnId, oldPwdId, newPwdId) {
+    const btn = document.getElementById(btnId);
+    const oldPwd = document.getElementById(oldPwdId);
+    const newPwd = document.getElementById(newPwdId);
+
+    if (btn && oldPwd && newPwd) {
+        btn.addEventListener('click', function() {
+            oldPwd.disabled = false;
+            newPwd.disabled = false;
+        });
+    }
 }

@@ -1,18 +1,22 @@
-{% with messages = get_flashed_messages() %}
+{% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
-        <div class="toast show fade position-fixed top-10 end-0 m-4 rounded shadow" 
-            role="alert" aria-live="assertive" aria-atomic="true" 
-            data-mdb-autohide="true" data-mdb-delay="5000"
-            style="border-radius: 2rem; z-index: 3000;">
-            <div class="toast-header bg-primary text-white rounded" style="border-radius: 2rem;">
-                <i class="fas fa-info-circle me-2"></i>
-                <span>
-                    {% for message in messages %}
-                        {{ message }}{% if not loop.last %}<br>{% endif %}
-                    {% endfor %}
-                </span>
-                <button type="button" class="btn-close btn-close-white ms-auto" data-mdb-dismiss="toast" aria-label="Close"></button>
+        {% for category, message in messages %}
+            <div class="toast show fade position-fixed top-10 end-0 m-4 rounded shadow"
+                role="alert" aria-live="assertive" aria-atomic="true"
+                data-mdb-autohide="true" data-mdb-delay="5000"
+                style="border-radius: 2rem; z-index: 3000;">
+                <div class="toast-header 
+                    {% if category == 'danger' %}bg-danger text-white
+                    {% elif category == 'success' %}bg-success text-white
+                    {% elif category == 'warning' %}bg-warning text-dark
+                    {% elif category == 'info' %}bg-info text-white
+                    {% else %}bg-primary text-white
+                    {% endif %} rounded" style="border-radius: 2rem;">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span>{{ message }}</span>
+                    <button type="button" class="btn-close btn-close-white ms-auto" data-mdb-dismiss="toast" aria-label="Close"></button>
+                </div>
             </div>
-        </div>
+        {% endfor %}
     {% endif %}
 {% endwith %}

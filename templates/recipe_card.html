@@ -12,7 +12,8 @@
             <!-- Title and Creator -->
             <div class="text-center mb-3">
                 <h5 class="card-title mb-1">
-                    <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}" class="text-dark text-decoration-none">{{ recipe.title }}</a>
+                    <a href="{{ url_for('recipedetails', recipe_title=recipe.title, prepared_by=recipe.prepared_by) }}" class="text-dark text-decoration-none">{{ recipe.title }}</a>
+
                 </h5>
                 <p class="text-muted mb-2" style="font-size: 0.9rem;">by <strong>{{ recipe.prepared_by }}</strong></p>
             </div>
@@ -28,7 +29,7 @@
             <!-- Action Buttons -->
             <div class="d-flex justify-content-between align-items-center px-2">
                 <!-- Make This Button -->
-                <a href="{{ url_for('recipedetails', recipe_title=recipe.title) }}" class="btn btn-primary flex-grow-1 me-2">Make This</a>
+                <a href="{{ url_for('recipedetails', recipe_title=recipe.title, prepared_by=recipe.prepared_by) }}" class="btn btn-primary flex-grow-1 me-2">Make This</a>
                 
                 {% if recipe.prepared_by == user.username %}
                     <!-- Edit Recipe Button -->

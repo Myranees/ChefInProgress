@@ -191,20 +191,26 @@ def savedrecipes():
     user = user_col.find_one({'email': session['user_email']})
     favorite_titles = user.get('favorites', [])
 
+    # Convert string IDs to ObjectId
+    try:
+        object_ids = [ObjectId(fav_id) for fav_id in favorite_titles]
+    except Exception as e:
+        flash(f"Error processing favorites: {e}", "danger")
+        return redirect(url_for('home'))  # Or any other fallback
+
     # Fetch all recipes matching favorites
-    all_recipes = list(recipe_col.find({'title': {'$in': favorite_titles}}))
+    all_recipes = list(recipe_col.find({'_id': {'$in': object_ids}}))
 
     # Pagination setup
     per_page = 12
-    page = request.args.get('page', 1, type=int)  # get page number from query params, default 1
+    page = request.args.get('page', 1, type=int)
     total = len(all_recipes)
     start = (page - 1) * per_page
     end = start + per_page
 
-    # Slice the list for current page
     recipes = all_recipes[start:end]
 
-    total_pages = (total + per_page - 1) // per_page  # ceil division to get total pages
+    total_pages = (total + per_page - 1) // per_page
 
     return render_template('savedrecipes.html',
                            recipes=recipes,
@@ -213,6 +219,7 @@ def savedrecipes():
                            total_pages=total_pages,
                            total=total,
                            per_page=per_page)
+
 @app.route('/myrecipes')
 def myrecipes():
     if 'user_email' not in session:
@@ -256,16 +263,18 @@ def toggle_favorite(recipe_id):
 
     if user and recipe:
         favorites = user.get('favorites', [])
-        if recipe_id in favorites:
+        # Convert all favorites to ObjectId for comparison
+        favorites_obj_ids = [ObjectId(fav) if isinstance(fav, str) else fav for fav in favorites]
+        if obj_id in favorites_obj_ids:
             user_col.update_one(
                 {'email': session['user_email']},
-                {'$pull': {'favorites': recipe_id}}
+                {'$pull': {'favorites': obj_id}}
             )
             flash(f"{recipe['title']} removed from your favorites.")
         else:
             user_col.update_one(
                 {'email': session['user_email']},
-                {'$push': {'favorites': recipe_id}}
+                {'$push': {'favorites': obj_id}}
             )
             flash(f"{recipe['title']} added to your favorites!")
     
@@ -461,7 +470,12 @@ def deleterecipe(recipe_id):
         recipe = recipe_col.find_one({"_id": ObjectId(recipe_id)})
         if recipe:
             recipe_col.delete_one({"_id": ObjectId(recipe_id)})
+            user_col.update_one(
+                {'email': session['user_email']},
+                {'$pull': {'created_recipe': ObjectId(recipe_id)}}
+            )
             flash('Recipe deleted successfully!', 'success')
+
         else:
             flash('Recipe not found.', 'danger')
     except Exception as e:
@@ -506,6 +520,15 @@ def profile():
             })
             if existing_user:
                 flash("Username already taken. Please choose another.", "danger")
+                return redirect(url_for('profile'))
+            
+        if email and email != user['email']:
+            existing_user = user_col.find_one({
+                'email': email,
+                '_id': {'$ne': user['_id']}  # Exclude current user from check
+            })
+            if existing_user:
+                flash("Email already exist. Please choose another.", "danger")
                 return redirect(url_for('profile'))
             
         update_fields = {

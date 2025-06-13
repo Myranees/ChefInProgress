@@ -439,7 +439,7 @@ def editrecipe(recipe_id):
             recipe_col.update_one({'_id': recipe['_id']}, {'$set': updated_recipe})
 
             flash("Recipe updated successfully!")
-            return redirect(url_for('recipedetails', recipe_title=title))
+            return redirect(url_for('recipedetails', recipe_id=recipe_id))
 
         except Exception as e:
             flash(f"An error occurred while updating: {str(e)}")
@@ -447,14 +447,18 @@ def editrecipe(recipe_id):
 
     return render_template('editrecipe.html', recipe=recipe)
 
-@app.route('/deleterecipe/<recipe_title>')
-def deleterecipe(recipe_title):
-    recipe = recipe_col.find_one({"title": recipe_title})
-    if recipe:
-        recipe_col.delete_one({"_id": recipe['_id']})
-        flash('Recipe deleted successfully!', 'success')
-    else:
-        flash('Recipe not found.', 'danger')
+@app.route('/deleterecipe/<recipe_id>')
+def deleterecipe(recipe_id):
+    try:
+        recipe = recipe_col.find_one({"_id": ObjectId(recipe_id)})
+        if recipe:
+            recipe_col.delete_one({"_id": ObjectId(recipe_id)})
+            flash('Recipe deleted successfully!', 'success')
+        else:
+            flash('Recipe not found.', 'danger')
+    except Exception as e:
+        flash(f"Error deleting recipe: {e}", 'danger')
+
     return redirect(url_for('myrecipes'))
 
 @app.template_filter('format_output')

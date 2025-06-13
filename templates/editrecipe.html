@@ -119,7 +119,9 @@
                 <!-- Submit Button -->
                 <div class="text-center mt-4">
                     <button type="submit" class="btn btn-primary btn-lg px-5">Update Changes</button>
-                    <a href="{{ url_for('deleterecipe', recipe_title=recipe.title) }}" class="btn btn-danger btn-lg px-5" onclick="return confirm('Are you sure you want to delete this recipe?')">Delete Recipe</a>
+                    <a href="{{ url_for('deleterecipe', recipe_id=recipe._id|string) }}"
+                        class="btn btn-danger btn-lg px-5"
+                        onclick="return confirm('Are you sure you want to delete this recipe?')">Delete Recipe</a>
                 </div>
             </form>
         </div>

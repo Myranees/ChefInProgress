@@ -153,7 +153,7 @@ def register():
             "username": username,
             "email": email,
             "password": hashed_password,
-            "favorite": [],
+            "created_recipe": [],
             "profile_pic": "default_profile.png"
         })
 
@@ -307,8 +307,19 @@ def addrecipe():
                 'ingredients': ingredients,
                 'instructions': step_data
             }
+            
+            # Insert recipe and get inserted ID
+            result = recipe_col.insert_one(recipe)
+            recipe_id = result.inserted_id
 
-            recipe_col.insert_one(recipe)
+            # Update user's created_recipe list
+            username = session.get('username')
+            if username:
+                user_col.update_one(
+                    {"username": username},
+                    {"$push": {"created_recipe": recipe_id}}
+                )
+
             flash("Recipe added successfully!")
             return redirect(url_for('myrecipes'))
 
@@ -457,8 +468,15 @@ def profile():
         return redirect(url_for('login'))
 
     user = user_col.find_one({'email': session['user_email']})
-    created_count = recipe_col.count_documents({'prepared_by': user['username']})
-
+    # Get array of recipe IDs created by this user
+    created_recipes = list(recipe_col.find(
+        {'prepared_by': user['username']},
+        {'_id': 1}  # Only return the IDs
+    ))
+    
+    # Convert ObjectIds to strings for easier handling in template
+    user['created_recipe'] = [str(recipe['_id']) for recipe in created_recipes]
+    
     if request.method == 'POST':
         name = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
@@ -518,7 +536,7 @@ def profile():
         flash("Profile updated successfully!")
         return redirect(url_for('profile'))
 
-    return render_template('profile.html', user=user, created_count=created_count)
+    return render_template('profile.html', user=user)
 
 @app.context_processor
 def inject_user():

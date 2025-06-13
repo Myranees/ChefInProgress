@@ -21,7 +21,6 @@
 
 
 {% block content %}
-
 <!-- Popular Recipes -->
 <section class="container p-3 text-left center">
   <div class="row text-center mb-4 mt-4">
@@ -45,64 +44,39 @@
   <div class="row text-center my-4">
     <form action="{{ url_for('index') }}" method="GET" class="bg-white shadow-sm rounded-2 px-4 py-4">
       <div class="row gy-3 align-items-center">
-        <!-- Text Search Input -->
-        <div class="col-md-6">
-          <div class="input-group border rounded-pill shadow-sm overflow-hidden">
-            <span class="input-group-text bg-white border-0 px-4">
-              <i class="fas fa-search text-muted"></i>
-            </span>
-            <input 
-              type="text" 
-              class="form-control border-0 px-3 py-2" 
-              name="search" 
-              placeholder="Search for recipes..." 
-              value="{{ search_query }}"
-            >
-          </div>
+      <!--Text Search Input-->
+      <div class="col-md-6">
+        <div class="input-group border rounded-pill shadow-sm overflow-hidden">
+          <span class="input-group-text bg-white border-0 px-4">
+            <i class="fas fa-search text-muted"></i>
+          </span>
+          <input type="search" name="query" placeholder="Search for Recipes" value="{{ search_query or '' }}" class="form-control border-0 px-3 py-2">
         </div>
-
-        <!-- Cuisine Filter Dropdown -->
-        <div class="col-md-4">
-          <select class="form-select rounded-pill py-2 px-3 shadow-sm" name="cuisine" required>
-            <option value="" disabled {% if not selected_cuisine %}selected{% endif %}>Select Cuisine</option>
-            <option value="Malay" {% if selected_cuisine == 'Malay' %}selected{% endif %}>Malay</option>
-            <option value="Chinese" {% if selected_cuisine == 'Chinese' %}selected{% endif %}>Chinese</option>
-            <option value="Indian" {% if selected_cuisine == 'Indian' %}selected{% endif %}>Indian</option>
-            <option value="Thai" {% if selected_cuisine == 'Thai' %}selected{% endif %}>Thai</option>
-            <option value="Western" {% if selected_cuisine == 'Western' %}selected{% endif %}>Western</option>
-            <option value="Japanese" {% if selected_cuisine == 'Japanese' %}selected{% endif %}>Japanese</option>
-            <option value="Korean" {% if selected_cuisine == 'Korean' %}selected{% endif %}>Korean</option>
-            <option value="Indonesian" {% if selected_cuisine == 'Indonesian' %}selected{% endif %}>Indonesian</option>
-          </select>
-        </div>
-
-        <!-- Search Button -->
-        <div class="col-md-2">
-          <button class="btn btn-dark w-100 rounded-pill py-2 shadow-sm" type="submit">
-            Search
-          </button>
-        </div>
+      </div>
+    
+      <!-- Cuisine Filter Dropdown -->
+      <div class="col-md-4">
+        <select class="form-select rounded-pill py-2 px-3 shadow-sm" name="cuisine">
+          <option value="" {% if not selected_cuisine %}selected{% endif %} hidden>Select Cuisine</option>
+          <option value="Malay" {% if selected_cuisine == 'Malay' %}selected{% endif %}>Malay</option>
+          <option value="Chinese" {% if selected_cuisine == 'Chinese' %}selected{% endif %}>Chinese</option>
+          <option value="Indian" {% if selected_cuisine == 'Indian' %}selected{% endif %}>Indian</option>
+          <option value="Thai" {% if selected_cuisine == 'Thai' %}selected{% endif %}>Thai</option>
+          <option value="Western" {% if selected_cuisine == 'Western' %}selected{% endif %}>Western</option>
+          <option value="Japanese" {% if selected_cuisine == 'Japanese' %}selected{% endif %}>Japanese</option>
+          <option value="Korean" {% if selected_cuisine == 'Korean' %}selected{% endif %}>Korean</option>
+          <option value="Indonesian" {% if selected_cuisine == 'Indonesian' %}selected{% endif %}>Indonesian</option>
+        </select>
+      </div>
+    
+      <!-- Search Button -->
+      <div class="col-md-2">
+        <button class="btn btn-dark w-100 rounded-pill py-2 shadow-sm" type="submit">
+          Search
+        </button>
       </div>
     </form>
   </div>
-
-  <form action="{{ url_for('index') }}" method="GET">
-  <input type="search" name="query" placeholder="Search for Recipes" value="{{ search_query or '' }}">
-  
-  <select class="form-select rounded-pill py-2 px-3 shadow-sm" name="cuisine">
-    <option value="" {% if not selected_cuisine %}selected{% endif %} hidden>Select Cuisine</option>
-    <option value="Malay" {% if selected_cuisine == 'Malay' %}selected{% endif %}>Malay</option>
-    <option value="Chinese" {% if selected_cuisine == 'Chinese' %}selected{% endif %}>Chinese</option>
-    <option value="Indian" {% if selected_cuisine == 'Indian' %}selected{% endif %}>Indian</option>
-    <option value="Thai" {% if selected_cuisine == 'Thai' %}selected{% endif %}>Thai</option>
-    <option value="Western" {% if selected_cuisine == 'Western' %}selected{% endif %}>Western</option>
-    <option value="Japanese" {% if selected_cuisine == 'Japanese' %}selected{% endif %}>Japanese</option>
-    <option value="Korean" {% if selected_cuisine == 'Korean' %}selected{% endif %}>Korean</option>
-    <option value="Indonesian" {% if selected_cuisine == 'Indonesian' %}selected{% endif %}>Indonesian</option>
-  </select>
-
-  <button type="submit">Search</button>
-</form>
 
   <!-- Filtered Recipes -->
 {% if filtered_recipes %}

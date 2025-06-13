@@ -154,7 +154,7 @@ def register():
             "email": email,
             "password": hashed_password,
             "favorite": [],
-            "profile_pic": "default.jpg"
+            "profile_pic": "default_profile.png"
         })
 
         flash("Registration successful! Please log in.")

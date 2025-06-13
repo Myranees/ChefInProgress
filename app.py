@@ -60,11 +60,19 @@ def convert_to_minutes(time_str):
 
 @app.route('/')
 def index():
+    # Initialize variables
+    user = None
+    favorite_titles = []
+    
+    # Check if user is logged in
+    if 'user_email' in session:
+        user = user_col.find_one({'email': session['user_email']})
+        if user:
+            favorite_titles = user.get('favorites', [])
+            
     recipes = list(recipe_col.find()) 
     cuisine = request.args.get('cuisine')
     query = request.args.get('query')
-    user = user_col.find_one({'email': session['user_email']})
-    favorite_titles = user.get('favorites', [])
     filtered_recipes = []
 
     if cuisine or query:

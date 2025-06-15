@@ -437,6 +437,7 @@ def editrecipe(recipe_id):
             step_texts = [s.strip() for s in request.form.getlist('steps[]') if s.strip()]
             step_images = request.files.getlist('steps_images[]')
             delete_flags = request.form.getlist('delete_step_images[]')
+            delete_recipe_image = request.form.get('delete_recipe_image', '0') == '1'
 
             if not title or not category or not description or not ingredients or not step_texts:
                 flash("Please fill in all required fields.")
@@ -444,8 +445,17 @@ def editrecipe(recipe_id):
 
             image_file = request.files.get('image')
             image_filename = recipe.get('image')
+            
+            # Delete recipe image if requested
+            if delete_recipe_image and image_filename:
+                try:
+                    os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image_filename.replace('uploads/', '')))
+                    image_filename = None
+                except Exception as e:
+                    print(f"Error deleting recipe image: {str(e)}")
+                    
             if image_file and allowed_file(image_file.filename):
-                if image_filename and os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], image_filename.replace('uploads/', ''))):
+                if image_filename and not delete_recipe_image:
                     try:
                         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], image_filename.replace('uploads/', '')))
                     except:
@@ -464,12 +474,15 @@ def editrecipe(recipe_id):
                 if i < len(existing_steps):
                     img_path = existing_steps[i].get('image')
 
-                delete_flag = delete_flags[i] == '1' if i < len(delete_flags) else False
+                delete_flag = False
+                if i < len(delete_flags):
+                    delete_flag = delete_flags[i] == '1'
+                    
                 if delete_flag and img_path:
                     try:
                         os.remove(os.path.join(app.config['UPLOAD_FOLDER'], img_path.replace('uploads/', '')))
-                    except:
-                        pass
+                    except Exception as e:
+                        print(f"Error deleting file: {e}")
                     img_path = None
 
                 if i < len(step_images):
@@ -478,8 +491,8 @@ def editrecipe(recipe_id):
                         if img_path:
                             try:
                                 os.remove(os.path.join(app.config['UPLOAD_FOLDER'], img_path.replace('uploads/', '')))
-                            except:
-                                pass
+                            except Exception as e:
+                                print(f"Error deleting file: {e}")
                         step_filename = secure_filename(img_file.filename)
                         step_unique = f"step_{i}_{datetime.now().strftime('%Y%m%d%H%M%S')}_{step_filename}"
                         img_file.save(os.path.join(app.config['UPLOAD_FOLDER'], step_unique))

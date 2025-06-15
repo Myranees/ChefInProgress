@@ -56,8 +56,10 @@ function removeStepImage(button) {
 // Remove current image preview and set hidden delete flag
 function removeCurrentImage(button) {
     const container = button.closest('.current-image');
-    const hiddenInput = container.querySelector("input[type='hidden']");
+    if (!container) return;
+
     const image = container.querySelector("img");
+    const hiddenInput = container.querySelector("input[name='delete_recipe_image'], input[name='delete_step_images[]']");
 
     if (image) image.style.display = "none";  // hide the image
     if (button) button.style.display = "none"; // hide the X button

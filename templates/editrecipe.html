@@ -16,12 +16,20 @@
                 <!--Add Recipe Image-->
                 <div class="mb-4">
                     <label for="recipeImage" class="form-label">Add Image (Optional)</label>
-                     {% if recipe.image %}
-                    <div class="mb-2">
+                    
+                    {% if recipe.image %}
+                    <div class="mb-2 current-image">
                         <img src="{{ url_for('static', filename=recipe.image) }}" class="img-thumbnail" style="max-height: 200px;">
+                        <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removeCurrentImage(this)">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <input type="hidden" name="delete_recipe_image" value="0">
                         <p class="text-muted small mt-1">Current image</p>
                     </div>
+                    {% else %}
+                    <input type="hidden" name="delete_recipe_image" value="0">
                     {% endif %}
+                    
                     <input type="file" class="form-control" id="recipeImage" name="image">
                     <div class="form-text">Upload new image to replace current one</div>
                 </div>
@@ -50,9 +58,9 @@
                     </div>
                     <div class="col-md-6">
                         <label for="cookTime" class="form-label fw-semibold">Cook Time</label>
-                        <input type="text" class="form-control" id="cookTime" name="cook_time" value="{{ recipe.cook_time }}">
+                        <input type="text" class="form-control rounded-3" id="cookTime" name="cook_time" value="{{ recipe.cook_time }}">
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-6 mt-3">
                         <label for="servings" class="form-label fw-semibold">Servings</label>
                         <input type="number" class="form-control rounded-3" id="servings" name="servings" value="{{ recipe.servings }}">
                     </div>
@@ -79,38 +87,38 @@
                     <label class="form-label fw-semibold">Instructions</label>
                     <div id="step-list">
                         {% for step in recipe.instructions %}
-                            <!-- Step Text -->
-                            <div class="mb-3">
-                                <div class="input-group mb-2">
-                                    <textarea class="form-control rounded-start" name="steps[]">{{ step.text }}</textarea>
-                                    <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStep(this)">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                </div>
+                        <!-- Step Text -->
+                        <div class="mb-3">
+                            <div class="input-group mb-2">
+                                <textarea class="form-control rounded-start" name="steps[]">{{ step.text }}</textarea>
+                                <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStep(this)">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
-
-                            <!-- Step Image -->
-                            <div class="mb-3">
-                                {% if step.image %}
-                                <div class="mb-2 current-image">
-                                    <img src="{{ url_for('static', filename=step.image) }}" class="img-thumbnail" style="max-height: 150px;">
-                                    <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removeCurrentImage(this)">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                    <input type="hidden" name="delete_step_images[]" value="0">
-                                </div>
-                                </div>
-                                {% else %}
+                        </div>
+                        
+                        <!-- Step Image -->
+                        <div class="mb-3">
+                            {% if step.image %}
+                            <div class="mb-2 current-image">
+                                <img src="{{ url_for('static', filename=step.image) }}" class="img-thumbnail" style="max-height: 150px;">
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="removeCurrentImage(this)">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                                 <input type="hidden" name="delete_step_images[]" value="0">
-                                {% endif %}
-                                
-                                <div class="input-group mb-2">
-                                    <input type="file" class="form-control rounded-start" name="steps_images[]">
-                                    <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStepImage(this)">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
-                                </div>
+                                <p class="text-muted small mt-1">Current image</p>
                             </div>
+                            {% else %}
+                            <input type="hidden" name="delete_step_images[]" value="0">
+                            {% endif %}
+
+                            <div class="input-group mb-2">
+                                <input type="file" class="form-control rounded-start" name="steps_images[]">
+                                <button type="button" class="btn btn-outline-danger rounded-end" onclick="removeStepImage(this)">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
                         {% endfor %}
                     </div>
                     <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" onclick="addStep()">+ Add Step</button>
